@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Panel Maestro{% endblock %}
+{% block content %}
+<h2>Panel del Maestro</h2>
+<ul class="dashboard-links"> <li><a href="{{ url_for('mostrar_asistencias') }}">Ver Asistencias</a></li>
+    <li><a href="{{ url_for('ver_justificantes') }}">Revisar Justificantes</a></li>
+    <li><a href="{{ url_for('alumnos') }}">Gestionar Alumnos</a></li> {# CORREGIDO PREVIAMENTE #}
+    <li><a href="{{ url_for('maestros') }}">Gestionar Maestros</a></li> {# CAMBIO REALIZADO AQUÍ #}
+</ul>
+{% endblock %}

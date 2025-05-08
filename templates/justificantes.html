@@ -1,0 +1,21 @@
+html
+{% extends "base.html" %}
+{% block title %}Justificantes{% endblock %}
+{% block content %}
+<h2>Justificantes</h2>
+<table>
+<tr><th>Matrícula</th><th>Fecha</th><th>Motivo</th><th>Estado</th><th>Acción</th></tr>
+{% for j in justificantes %}
+<tr>
+    <td>{{ j[1] }}</td>
+    <td>{{ j[2] }}</td>
+    <td>{{ j[3] }}</td>
+    <td>{{ j[4] }}</td>
+    <td>
+        <a href="{{ url_for('actualizar_justificante', id=j[0], estado='aprobado') }}">Aprobar</a> |
+        <a href="{{ url_for('actualizar_justificante', id=j[0], estado='rechazado') }}">Rechazar</a>
+    </td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}

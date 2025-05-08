@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Agregar Maestro{% endblock %}
+{% block content %}
+<h2>{{ 'Editar' if maestro else 'Agregar' }} Maestro</h2>
+<form method="post">
+    <label>Nombre:</label><br>
+    <input type="text" name="nombre" value="{{ maestro[1] if maestro else '' }}"><br>
+    <label>Usuario:</label><br>
+    <input type="text" name="usuario" value="{{ maestro[2] if maestro else '' }}"><br>
+    <label>Contraseña:</label><br>
+    <input type="password" name="password"><br>
+    <input type="submit" value="{{ 'Actualizar' if maestro else 'Agregar' }}">
+</form>
+<a href="{{ url_for('ver_maestros') }}">Volver</a>
+{% endblock %}

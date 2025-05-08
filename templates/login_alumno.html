@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Login Alumno{% endblock %}
+
+{% block content %}
+<h2>Iniciar Sesión como Alumno</h2>
+
+{# CAMBIO REALIZADO: Mostrar mensajes flash #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-messages">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+{# FIN DEL CAMBIO #}
+
+<form method="post">
+    <label>Matrícula:</label><br>
+    <input type="text" name="matricula" required><br> {# Añadido 'required' #}
+    <label>Contraseña:</label><br>
+    <input type="password" name="password" required><br> {# Añadido 'required' #}
+    <input type="submit" value="Ingresar" class="btn">
+</form>
+<p style="margin-top: 20px;"><a href="{{ url_for('index') }}">Volver a la selección de acceso</a></p>
+{% endblock %}

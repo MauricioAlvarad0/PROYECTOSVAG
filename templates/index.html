@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Inicio{% endblock %}
+{% block content %}
+<h2>Bienvenido al sistema SVAG</h2>
+<p>Selecciona tu tipo de acceso:</p>
+<ul class="index-links"> {# CLASE AÑADIDA/VERIFICADA #}
+    <li><a href="{{ url_for('login_maestro') }}">Acceso Maestros</a></li>
+    <li><a href="{{ url_for('login_alumno') }}">Acceso Alumnos</a></li>
+</ul>
+{% endblock %}

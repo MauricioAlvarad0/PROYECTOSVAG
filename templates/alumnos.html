@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Alumnos{% endblock %}
+{% block content %}
+<h2>Lista de Alumnos</h2>
+<a href="{{ url_for('agregar_alumno') }}">Agregar Nuevo Alumno</a>
+<table>
+    <tr><th>ID</th><th>Nombre</th><th>Matrícula</th><th>Acciones</th></tr>
+    {% for a in alumnos %}
+    <tr>
+        <td>{{ a[0] }}</td>
+        <td>{{ a[1] }}</td>
+        <td>{{ a[2] }}</td>
+        <td>
+            <a href="{{ url_for('editar_alumno', id=a[0]) }}">Editar</a> |
+            <a href="{{ url_for('eliminar_alumno', id=a[0]) }}">Eliminar</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Maestros{% endblock %}
+{% block content %}
+<h2>Lista de Maestros</h2>
+<a href="{{ url_for('agregar_maestro') }}">Agregar Nuevo Maestro</a>
+<table>
+    <tr><th>ID</th><th>Nombre</th><th>Usuario</th><th>Acciones</th></tr>
+    {% for m in maestros %}
+    <tr>
+        <td>{{ m[0] }}</td>
+        <td>{{ m[1] }}</td>
+        <td>{{ m[2] }}</td>
+        <td>
+            <a href="{{ url_for('editar_maestro', id=m[0]) }}">Editar</a> |
+            <a href="{{ url_for('eliminar_maestro', id=m[0]) }}">Eliminar</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

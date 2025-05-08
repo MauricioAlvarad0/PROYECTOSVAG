@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Agregar Alumno{% endblock %}
+{% block content %}
+<h2>{{ 'Editar' if alumno else 'Agregar' }} Alumno</h2>
+<form method="post">
+    <label>Nombre:</label><br>
+    <input type="text" name="nombre" value="{{ alumno[1] if alumno else '' }}"><br>
+    <label>Matrícula:</label><br>
+    <input type="text" name="matricula" value="{{ alumno[2] if alumno else '' }}"><br>
+    <label>Contraseña:</label><br>
+    <input type="password" name="password"><br>
+    <input type="submit" value="{{ 'Actualizar' if alumno else 'Agregar' }}">
+</form>
+<a href="{{ url_for('ver_alumnos') }}">Volver</a>
+{% endblock %}

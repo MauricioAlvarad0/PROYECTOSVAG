@@ -1,0 +1,14 @@
+html
+{% extends "base.html" %}
+{% block title %}Asistencias{% endblock %}
+{% block content %}
+<h2>Lista de Asistencias</h2>
+<table>
+    <tr><th>Matrícula</th><th>Fecha</th><th>Hora</th><th>Estado</th></tr>
+    {% for r in registros %}
+    <tr>
+        <td>{{ r[0] }}</td><td>{{ r[1] }}</td><td>{{ r[2] }}</td><td>{{ r[3] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

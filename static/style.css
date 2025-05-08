@@ -1,0 +1,346 @@
+/* Estilos Generales del Cuerpo */
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #2c3e50, #3498db);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #ecf0f1;
+    padding-top: 20px;
+    box-sizing: border-box;
+}
+
+/* Contenedor Principal */
+.contenido {
+    text-align: center;
+    background: rgba(44, 62, 80, 0.7);
+    padding: 30px 40px;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    width: 90%;
+    max-width: 600px;
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+
+/* Logo */
+.logo {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100px;
+    margin-bottom: 20px;
+}
+
+/* Encabezados */
+h2 {
+    font-size: 2.2em;
+    color: #3498db;
+    margin-bottom: 25px;
+    font-weight: 700;
+}
+
+p {
+    font-size: 1.1em;
+    color: #bdc3c7;
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+/* Estilos para los Enlaces (generales y de navegación en texto) */
+a {
+    color: #5dade2;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #85c1e9;
+    text-decoration: underline;
+}
+
+/* Estilos para los botones de formulario y acciones */
+input[type="submit"], .btn {
+    display: inline-block;
+    background-color: #3498db;
+    color: #ffffff;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 15px;
+    text-decoration: none;
+}
+
+input[type="submit"]:hover, .btn:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+}
+
+/* Botones secundarios o alternativos */
+.btn-secondary {
+    background-color: #95a5a6;
+    color: #2c3e50;
+}
+
+.btn-secondary:hover {
+    background-color: #7f8c8d;
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background-color: #e74c3c;
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+}
+
+/* Estilos para las listas de navegación (como en dashboard_maestro.html e index.html) */
+ul.dashboard-links, ul.index-links { /* CAMBIO REALIZADO AQUÍ */
+    list-style: none;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+ul.dashboard-links li, ul.index-links li { /* CAMBIO REALIZADO AQUÍ */
+    margin-bottom: 15px;
+}
+
+ul.dashboard-links li a, ul.index-links li a { /* CAMBIO REALIZADO AQUÍ */
+    display: block;
+    background-color: rgba(52, 73, 94, 0.6);
+    padding: 15px;
+    border-radius: 5px;
+    color: #ecf0f1;
+    font-size: 1.2em;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+
+ul.dashboard-links li a:hover, ul.index-links li a:hover { /* CAMBIO REALIZADO AQUÍ */
+    background-color: #3498db;
+    color: #ffffff;
+    transform: translateX(5px);
+}
+
+/* Estilos para Formularios */
+form {
+    margin-top: 20px;
+}
+
+label {
+    display: block;
+    font-size: 1em;
+    color: #bdc3c7;
+    margin-bottom: 8px;
+    text-align: left;
+    font-weight: 500;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"], 
+textarea {
+    width: calc(100% - 26px);
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #34495e;
+    border-radius: 5px;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+textarea:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
+}
+
+/* Estilos para Tablas */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 25px;
+    background-color: rgba(44, 62, 80, 0.9);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #34495e;
+}
+
+th {
+    background-color: #3498db;
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 1.05em;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tbody tr:nth-child(even) {
+    background-color: rgba(52, 73, 94, 0.7);
+}
+
+tbody tr:hover { 
+    background-color: rgba(82, 103, 124, 0.7);
+}
+
+td a {
+    color: #5dade2;
+    margin-right: 10px;
+    font-weight: 500;
+}
+
+td a:hover {
+    color: #85c1e9;
+    text-decoration: underline;
+}
+
+td .btn, td input[type="submit"] {
+    padding: 6px 12px;
+    font-size: 0.9em;
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
+
+/* Estilos para Mensajes Flash */
+.flash-messages {
+    width: 100%;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+.alert {
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    color: #ffffff;
+    text-align: center;
+    font-weight: 500;
+    font-size: 1.05em;
+}
+
+.alert-error {
+    background-color: #e74c3c;
+    border-color: #c0392b;
+}
+
+.alert-success {
+    background-color: #2ecc71;
+    border-color: #27ae60;
+}
+
+.alert-info {
+    background-color: #3498db;
+    border-color: #2980b9;
+}
+
+.alert-warning {
+    background-color: #f39c12;
+    border-color: #d35400;
+}
+
+
+/* Media Queries para Responsividad */
+@media (max-width: 768px) {
+    .contenido {
+        padding: 25px 30px;
+        margin-left: 10px;
+        margin-right: 10px;
+        max-width: 95%;
+    }
+    h2 {
+        font-size: 1.9em;
+    }
+    input[type="submit"], .btn {
+        padding: 10px 20px;
+        font-size: 1em;
+    }
+    ul.dashboard-links li a, ul.index-links li a { /* CAMBIO REALIZADO AQUÍ */
+        font-size: 1.1em;
+        padding: 12px;
+    }
+    .logo {
+        width: 80px;
+    }
+    th, td {
+        padding: 10px 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding-top: 15px;
+    }
+    .contenido {
+        padding: 20px 20px;
+        margin-top: 15px;
+    }
+    .logo {
+        width: 70px;
+        margin-bottom: 15px;
+    }
+    h2 {
+        font-size: 1.7em;
+        margin-bottom: 20px;
+    }
+    p {
+        font-size: 1em;
+        margin-bottom: 20px;
+    }
+    ul.dashboard-links li a, ul.index-links li a { /* CAMBIO REALIZADO AQUÍ */
+        font-size: 1em;
+        padding: 10px;
+    }
+    input[type="text"],
+    input[type="password"],
+    input[type="email"],
+    textarea {
+        padding: 10px;
+        font-size: 0.95em;
+        width: calc(100% - 22px);
+    }
+    input[type="submit"], .btn {
+        padding: 10px 15px;
+        font-size: 0.95em;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .btn-secondary, .btn-danger {
+        width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+    }
+    td .btn, td input[type="submit"] { 
+        width: auto;
+        padding: 5px 10px;
+        font-size: 0.85em;
+    }
+    .alert {
+        padding: 12px;
+        font-size: 0.95em;
+    }
+}

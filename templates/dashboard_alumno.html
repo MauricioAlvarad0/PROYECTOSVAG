@@ -1,0 +1,25 @@
+html
+{% extends "base.html" %}
+{% block title %}Panel Alumno{% endblock %}
+{% block content %}
+<h2>Panel del Alumno</h2>
+<h3>Registro de Asistencias</h3>
+<ul>
+    {% for asistencia in asistencias %}
+        <li>{{ asistencia[0] }} - {{ asistencia[1] }} - {{ asistencia[2] }}</li>
+    {% endfor %}
+</ul>
+
+<h3>Justificantes</h3>
+<ul>
+    {% for j in justificantes %}
+        <li>{{ j[1] }} - {{ j[2] }} - Estado: {{ j[3] }}</li>
+    {% endfor %}
+</ul>
+
+<form method="post" action="{{ url_for('subir_justificante') }}">
+    <label>Motivo del Justificante:</label><br>
+    <input type="text" name="motivo"><br>
+    <input type="submit" value="Subir Justificante">
+</form>
+{% endblock %}

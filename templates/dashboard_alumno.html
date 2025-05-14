@@ -1,25 +1,71 @@
-html
 {% extends "base.html" %}
 {% block title %}Panel Alumno{% endblock %}
 {% block content %}
-<h2>Panel del Alumno</h2>
-<h3>Registro de Asistencias</h3>
-<ul>
-    {% for asistencia in asistencias %}
-        <li>{{ asistencia[0] }} - {{ asistencia[1] }} - {{ asistencia[2] }}</li>
-    {% endfor %}
-</ul>
+<h2>Panel del Alumno: {{ session.get('nombre_usuario') }}</h2>
+<p><strong>Grupo:</strong> {{ session.get('grupo_info', 'N/A') }}</p>
 
-<h3>Justificantes</h3>
-<ul>
+<h3>Mis Asistencias Recientes</h3>
+{% if asistencias %}
+<table>
+    <thead>
+        <tr><th>Fecha</th><th>Hora</th><th>Materia</th><th>Estado</th><th>Observaciones</th></tr>
+    </thead>
+    <tbody>
+    {% for a in asistencias %}
+        <tr>
+            <td>{{ a.fecha }}</td>
+            <td>{{ a.hora if a.hora else '--:--' }}</td>
+            <td>{{ a.nombre_materia }}</td>
+            <td>{{ a.estado }}</td>
+            <td>{{ a.observaciones if a.observaciones else '' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No tienes registros de asistencia recientes.</p>
+{% endif %}
+
+<hr style="margin: 30px 0;">
+
+<h3>Mis Justificantes</h3>
+{% if justificantes %}
+ <table>
+    <thead>
+        <tr><th>Solicitud</th><th>Fechas Inasistencia</th><th>Materia</th><th>Motivo</th><th>Estado</th></tr>
+    </thead>
+    <tbody>
     {% for j in justificantes %}
-        <li>{{ j[1] }} - {{ j[2] }} - Estado: {{ j[3] }}</li>
+        <tr>
+            <td>{{ j.fecha_solicitud.split(' ')[0] }}</td> {# Solo fecha #}
+            <td>{{ j.fecha_inasistencia_inicio }}{% if j.fecha_inasistencia_fin != j.fecha_inasistencia_inicio %} al {{j.fecha_inasistencia_fin}}{% endif%}</td>
+            <td>{{ j.nombre_materia if j.nombre_materia else 'General' }}</td>
+            <td>{{ j.motivo }}</td>
+            <td>{{ j.estado }}</td>
+        </tr>
     {% endfor %}
-</ul>
+    </tbody>
+</table>
+{% else %}
+<p>No tienes justificantes registrados.</p>
+{% endif %}
 
-<form method="post" action="{{ url_for('subir_justificante') }}">
-    <label>Motivo del Justificante:</label><br>
-    <input type="text" name="motivo"><br>
-    <input type="submit" value="Subir Justificante">
+<hr style="margin: 30px 0;">
+<h3>Subir Nuevo Justificante</h3>
+<form method="post" action="{{ url_for('alumno_subir_justificante') }}">
+    <div>
+        <label for="fecha_inasistencia_inicio">Fecha de Inicio de Inasistencia:</label>
+        <input type="date" id="fecha_inasistencia_inicio" name="fecha_inasistencia_inicio" required>
+    </div>
+     <div>
+        <label for="fecha_inasistencia_fin">Fecha de Fin de Inasistencia (si es más de un día):</label>
+        <input type="date" id="fecha_inasistencia_fin" name="fecha_inasistencia_fin">
+    </div>
+    <div>
+        <label for="motivo">Motivo del Justificante:</label>
+        <textarea id="motivo" name="motivo" rows="3" required></textarea>
+    </div>
+    {# Futuro: campo para seleccionar asignación si aplica, y para subir archivo #}
+    <input type="submit" value="Enviar Justificante" class="btn">
 </form>
 {% endblock %}

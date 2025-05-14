@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block content %}
+<h2>{{ titulo }}</h2>
+<form method="post" action="{{ accion_url }}">
+    <div>
+        <label for="grado_id">Grado:</label>
+        <select id="grado_id" name="grado_id" required>
+            <option value="">-- Seleccione un Grado --</option>
+            {% for grado_opt in grados %}
+            <option value="{{ grado_opt.id }}" {% if grupo_actual and grupo_actual.grado_id == grado_opt.id %}selected{% endif %}>
+                {{ grado_opt.nombre }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="nombre">Nombre del Grupo (ej. A, B, Único):</label>
+        <input type="text" id="nombre" name="nombre" value="{{ grupo_actual.nombre if grupo_actual else '' }}" required>
+    </div>
+    <br>
+    <input type="submit" value="{{ 'Actualizar' if grupo_actual and grupo_actual.id else 'Agregar' }} Grupo" class="btn">
+</form>
+<div class="return-link-container">
+    <a href="{{ url_for('gestionar_grupos') }}">Cancelar y Volver a Grupos</a>
+</div>
+{% endblock %}

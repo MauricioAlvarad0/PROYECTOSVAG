@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block content %}
+<h2>{{ titulo }}</h2>
+<form method="post" action="{{ accion_url }}">
+    <div>
+        <label for="clave_materia">Clave de Materia (Opcional):</label>
+        <input type="text" id="clave_materia" name="clave_materia" value="{{ materia.clave_materia if materia and materia.clave_materia is not none else '' }}">
+    </div>
+    <div>
+        <label for="nombre">Nombre de la Materia:</label>
+        <input type="text" id="nombre" name="nombre" value="{{ materia.nombre if materia else '' }}" required>
+    </div>
+    <br>
+    <input type="submit" value="{{ 'Actualizar' if materia and materia.id else 'Agregar' }} Materia" class="btn">
+</form>
+<div class="return-link-container">
+    <a href="{{ url_for('gestionar_materias') }}">Cancelar y Volver a Materias</a>
+</div>
+{% endblock %}

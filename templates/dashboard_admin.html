@@ -1,12 +1,22 @@
 {% extends "base.html" %}
 {% block title %}Panel Administrador{% endblock %}
+
 {% block content %}
 <h2>Panel del Administrador</h2>
 <p>Bienvenido, {{ session.get('nombre_usuario', 'Admin') }}!</p>
+
 <ul class="dashboard-links">
-    <li><a href="{{ url_for('admin_gestionar_maestros') }}">Gestionar Maestros</a></li>
+    <li><a href="{{ url_for('gestionar_grados') }}">Gestionar Grados</a></li>
+    <li><a href="{{ url_for('gestionar_grupos') }}">Gestionar Grupos</a></li>
+    <li><a href="{{ url_for('gestionar_materias') }}">Gestionar Materias</a></li>
+    <li><hr></li>
+    <li><a href="{{ url_for('admin_gestionar_maestros') }}">Gestionar Maestros y Administradores</a></li>
     <li><a href="{{ url_for('admin_gestionar_alumnos') }}">Gestionar Alumnos</a></li>
-    <li><a href="#">Ver Logs del Sistema (Futuro)</a></li>
-    <li><a href="#">Configuración General (Futuro)</a></li>
+    <li><hr></li>
+    <li><a href="{{ url_for('gestionar_asignaciones') }}">Gestionar Asignaciones (Maestro-Materia-Grupo)</a></li>
+    {# Futuro:
+    <li><a href="#">Ver Logs del Sistema</a></li>
+    <li><a href="#">Configuración General</a></li>
+    #}
 </ul>
 {% endblock %}

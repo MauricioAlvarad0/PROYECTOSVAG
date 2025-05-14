@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Gestionar Materias{% endblock %}
+{% block content %}
+<h2>Gestionar Materias</h2>
+<p><a href="{{ url_for('agregar_materia') }}" class="btn">Agregar Nueva Materia</a></p>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Clave (Opcional)</th>
+            <th>Nombre de la Materia</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for materia in materias %}
+        <tr>
+            <td>{{ materia.id }}</td>
+            <td>{{ materia.clave_materia if materia.clave_materia else 'N/A' }}</td>
+            <td>{{ materia.nombre }}</td>
+            <td>
+                <a href="{{ url_for('editar_materia', id=materia.id) }}">Editar</a> |
+                <a href="{{ url_for('eliminar_materia', id=materia.id) }}" onclick="return confirm('¿Estás seguro? Las asignaciones de esta materia se eliminarán.');">Eliminar</a>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No hay materias registradas.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+<div class="return-link-container">
+    <a href="{{ url_for('dashboard_admin') }}">Volver al Panel de Administrador</a>
+</div>
+{% endblock %}

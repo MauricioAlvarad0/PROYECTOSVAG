@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block content %}
+<h2>{{ titulo }}</h2>
+<form method="post" action="{{ accion_url }}">
+    <div>
+        <label for="nombre">Nombre del Grado:</label>
+        <input type="text" id="nombre" name="nombre" value="{{ grado.nombre if grado else '' }}" required>
+    </div>
+    <br>
+    <input type="submit" value="{{ 'Actualizar' if grado else 'Agregar' }} Grado" class="btn">
+</form>
+<div class="return-link-container">
+    <a href="{{ url_for('gestionar_grados') }}">Cancelar y Volver a Grados</a>
+</div>
+{% endblock %}

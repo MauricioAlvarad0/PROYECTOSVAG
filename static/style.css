@@ -219,23 +219,38 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 25px;
-    background-color: rgba(44, 62, 80, 0.9);
+    background-color: rgba(44, 62, 80, 0.9); /* Fondo oscuro para tablas (si usas tema oscuro) */
+    /* Si quieres un tema más claro como el que te propuse antes, sería:
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    */
     border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    overflow: hidden; /* Para que el border-radius afecte a las celdas */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* Sombra para tema oscuro */
 }
 
 th, td {
     padding: 12px 15px;
     text-align: left;
-    border-bottom: 1px solid #34495e;
+    border-bottom: 1px solid #34495e; /* Separadores oscuros */
+    /* Para tema claro:
+    border-bottom: 1px solid #e9ecef;
+    */
 }
 
 th {
-    background-color: #3498db;
+    background-color: #3498db; /* Encabezados de tabla azules */
     color: #ffffff;
     font-weight: 500;
     font-size: 1.05em;
+    /* Para tema claro:
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: 600;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    */
 }
 
 tr:last-child td {
@@ -243,21 +258,29 @@ tr:last-child td {
 }
 
 tbody tr:nth-child(even) {
-    background-color: rgba(52, 73, 94, 0.7);
+    background-color: rgba(52, 73, 94, 0.7); /* Intercalado de filas oscuro */
+    /* Para tema claro:
+    background-color: #fbfcfc;
+    */
 }
 
 tbody tr:hover {
-    background-color: rgba(82, 103, 124, 0.7);
+    background-color: rgba(82, 103, 124, 0.7); /* Resaltado oscuro */
+    /* Para tema claro:
+    background-color: #f1f4f6;
+    */
 }
 
 td a { /* Enlaces dentro de celdas de tabla */
-    color: #5dade2;
+    color: #5dade2; /* Azul claro para enlaces en tema oscuro */
+    /* Para tema claro: color: #3498db; */
     margin-right: 10px;
     font-weight: 500;
 }
 
 td a:hover {
-    color: #85c1e9;
+    color: #85c1e9; /* Más claro al pasar el ratón */
+    /* Para tema claro: color: #2980b9; */
 }
 
 td .btn, td input[type="submit"] { /* Botones dentro de celdas de tabla */
@@ -265,44 +288,6 @@ td .btn, td input[type="submit"] { /* Botones dentro de celdas de tabla */
     font-size: 0.9em;
     margin-top: 0;
     margin-bottom: 5px;
-}
-
-/* Estilos para Mensajes Flash (dentro de .contenido) */
-.flash-messages {
-    width: 100%;
-    margin-bottom: 20px;
-    box-sizing: border-box;
-}
-
-.alert {
-    padding: 15px;
-    margin-bottom: 15px;
-    border: 1px solid transparent;
-    border-radius: 5px;
-    color: #ffffff;
-    text-align: center;
-    font-weight: 500;
-    font-size: 1.05em;
-}
-
-.alert-error, .alert-danger {
-    background-color: #e74c3c;
-    border-color: #c0392b;
-}
-
-.alert-success {
-    background-color: #2ecc71;
-    border-color: #27ae60;
-}
-
-.alert-info {
-    background-color: #3498db;
-    border-color: #2980b9;
-}
-
-.alert-warning {
-    background-color: #f39c12;
-    border-color: #d35400;
 }
 
 /* Contenedor y estilos para enlaces de "Regresar" */

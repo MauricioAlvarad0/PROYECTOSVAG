@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Mis Clases{% endblock %}
+{% block content %}
+<h2>Mis Clases Asignadas</h2>
+{% if asignaciones %}
+<table>
+    <thead>
+        <tr>
+            <th>Ciclo</th>
+            <th>Materia</th>
+            <th>Grado - Grupo</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for asig in asignaciones %}
+        <tr>
+            <td>{{ asig.ciclo_escolar }}</td>
+            <td>{{ asig.nombre_materia }}</td>
+            <td>{{ asig.nombre_grado }} - {{ asig.nombre_grupo }}</td>
+            <td>
+                <a href="{{ url_for('maestro_registrar_asistencia', asignacion_id=asig.asignacion_id) }}" class="btn btn-sm">Pasar Lista / Ver Asistencia</a>
+                {# <a href="#">Ver Alumnos</a> #}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No tienes clases asignadas actualmente.</p>
+{% endif %}
+<div class="return-link-container">
+    <a href="{{ url_for('dashboard_maestro') }}">Volver al Panel de Maestro</a>
+</div>
+{% endblock %}

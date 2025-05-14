@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Gestionar Usuarios (Maestros/Admins){% endblock %}
+{% block content %}
+<h2>Gestionar Usuarios (Maestros y Administradores)</h2>
+<p><a href="{{ url_for('admin_agregar_maestro') }}" class="btn">Agregar Nuevo Usuario</a></p>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Usuario (Login)</th>
+            <th>Rol</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for m in maestros %} {# Cambiado a 'm' para evitar conflicto con variable global 'maestro' #}
+        <tr>
+            <td>{{ m.id }}</td>
+            <td>{{ m.nombre if m.nombre else '-' }}</td>
+            <td>{{ m.usuario }}</td>
+            <td>{{ m.rol | capitalize }}</td>
+            <td>
+                <a href="{{ url_for('admin_editar_maestro', id=m.id) }}">Editar</a>
+                {% if not (session.user_id == m.id and session.rol == 'admin') %}
+                | <a href="{{ url_for('admin_eliminar_maestro', id=m.id) }}" onclick="return confirm('¿Estás seguro? Las asignaciones y revisiones de este usuario se verán afectadas.');">Eliminar</a>
+                {% else %}
+                | (En sesión)
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">No hay usuarios maestros/admin registrados.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+<div class="return-link-container">
+    <a href="{{ url_for('dashboard_admin') }}">Volver al Panel de Administrador</a>
+</div>
+{% endblock %}

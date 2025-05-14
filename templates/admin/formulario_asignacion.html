@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block content %}
+<h2>{{ titulo }}</h2>
+<form method="post" action="{{ accion_url }}">
+    <div>
+        <label for="maestro_id">Maestro:</label>
+        <select id="maestro_id" name="maestro_id" required>
+            <option value="">-- Seleccione un Maestro --</option>
+            {% for maestro_opt in maestros %}
+            <option value="{{ maestro_opt.id }}" {% if asignacion and asignacion.maestro_id == maestro_opt.id %}selected{% endif %}>
+                {{ maestro_opt.nombre }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="materia_id">Materia:</label>
+        <select id="materia_id" name="materia_id" required>
+            <option value="">-- Seleccione una Materia --</option>
+            {% for materia_opt in materias %}
+            <option value="{{ materia_opt.id }}" {% if asignacion and asignacion.materia_id == materia_opt.id %}selected{% endif %}>
+                {{ materia_opt.nombre }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="grupo_id">Grupo:</label>
+        <select id="grupo_id" name="grupo_id" required>
+            <option value="">-- Seleccione un Grupo --</option>
+            {% for grupo_opt in grupos %}
+            <option value="{{ grupo_opt.id }}" {% if asignacion and asignacion.grupo_id == grupo_opt.id %}selected{% endif %}>
+                {{ grupo_opt.nombre_completo_grupo }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="ciclo_escolar">Ciclo Escolar (ej. 2025-A, 2025-2026):</label>
+        <input type="text" id="ciclo_escolar" name="ciclo_escolar" value="{{ asignacion.ciclo_escolar if asignacion else '' }}" required>
+    </div>
+    <br>
+    <input type="submit" value="{{ 'Actualizar' if asignacion and asignacion.id else 'Agregar' }} Asignación" class="btn">
+</form>
+<div class="return-link-container">
+    <a href="{{ url_for('gestionar_asignaciones') }}">Cancelar y Volver a Asignaciones</a>
+</div>
+{% endblock %}

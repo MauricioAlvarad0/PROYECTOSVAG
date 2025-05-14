@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Gestionar Asignaciones{% endblock %}
+
+{% block content %}
+<h2>Gestionar Asignaciones (Maestro - Materia - Grupo)</h2>
+
+<div style="margin-bottom: 20px;"> {# Contenedor para el botón de agregar #}
+    <a href="{{ url_for('agregar_asignacion') }}" class="btn">Agregar Nueva Asignación</a>
+</div>
+
+{% if asignaciones %}
+<table> {# La etiqueta table usará los estilos globales de tu style.css #}
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Ciclo Escolar</th>
+            <th>Maestro</th>
+            <th>Materia</th>
+            <th>Grado - Grupo</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for asignacion in asignaciones %}
+        <tr>
+            <td>{{ asignacion.id }}</td>
+            <td>{{ asignacion.ciclo_escolar }}</td>
+            <td>{{ asignacion.nombre_maestro }}</td>
+            <td>{{ asignacion.nombre_materia }}</td>
+            <td>{{ asignacion.nombre_grado }} - {{ asignacion.nombre_grupo }}</td>
+            <td>
+                {# <a href="#" class="btn btn-sm btn-secondary">Editar</a> #} {# Ejemplo si quieres botón editar #}
+                <a href="{{ url_for('eliminar_asignacion', id=asignacion.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de eliminar esta asignación? Las asistencias y justificantes vinculados se verán afectados.');">Eliminar</a>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            {# Ajustar colspan al número de columnas si cambia #}
+            <td colspan="6">No hay asignaciones registradas.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No hay asignaciones registradas actualmente.</p>
+{% endif %}
+
+<div class="return-link-container" style="margin-top: 30px;">
+    <a href="{{ url_for('dashboard_admin') }}">Volver al Panel de Administrador</a>
+</div>
+{% endblock %}

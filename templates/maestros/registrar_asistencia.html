@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Registrar Asistencia - {{ asignacion.nombre_materia }}{% endblock %}
+{% block content %}
+<h2>Registrar Asistencia</h2>
+<h3>{{ asignacion.nombre_grado }} - Grupo {{ asignacion.nombre_grupo }}</h3>
+<h4>Materia: {{ asignacion.nombre_materia }}</h4>
+
+<form method="POST">
+    <div>
+        <label for="fecha_asistencia">Fecha de Asistencia:</label>
+        <input type="date" id="fecha_asistencia" name="fecha_asistencia" value="{{ request.form.fecha_asistencia if request.form.fecha_asistencia else fecha_hoy }}" required>
+         <small>(Al cambiar la fecha y enviar, se cargarán las asistencias de ese día si existen, o se registrarán nuevas.)</small>
+    </div>
+    <br>
+    {% if alumnos %}
+    <table>
+        <thead>
+            <tr>
+                <th>Matrícula</th>
+                <th>Nombre Alumno</th>
+                <th>Estado</th>
+                <th>Observaciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for alumno in alumnos %}
+            <tr>
+                <td>{{ alumno.matricula }}</td>
+                <td>{{ alumno.nombre }}</td>
+                <td>
+                    <select name="asistencia_alumno_{{ alumno.id }}" required>
+                        <option value="">-- Seleccionar --</option>
+                        {% set estado_actual = asistencias_registradas.get(alumno.id, {}).get('estado') %}
+                        <option value="Presente" {% if estado_actual == 'Presente' %}selected{% endif %}>Presente</option>
+                        <option value="Ausente" {% if estado_actual == 'Ausente' %}selected{% endif %}>Ausente</option>
+                        <option value="Retardo" {% if estado_actual == 'Retardo' %}selected{% endif %}>Retardo</option>
+                        <option value="Justificado" {% if estado_actual == 'Justificado' %}selected{% endif %}>Justificado</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="observaciones_alumno_{{ alumno.id }}"
+                           value="{{ asistencias_registradas.get(alumno.id, {}).get('observaciones', '') }}"
+                           placeholder="Opcional">
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <input type="submit" value="Guardar Asistencias del Día" class="btn">
+    {% else %}
+    <p>No hay alumnos inscritos en este grupo actualmente.</p>
+    {% endif %}
+</form>
+<div class="return-link-container" style="margin-top: 30px;">
+    <a href="{{ url_for('maestro_mis_clases') }}">Volver a Mis Clases</a>
+</div>
+{% endblock %}

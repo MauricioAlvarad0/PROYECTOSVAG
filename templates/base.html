@@ -4,21 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Sistema SVAG{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    </head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> {# <--- ESTA LÍNEA ES CRUCIAL #}
+</head>
 <body>
     <div class="page-header">
-        <img src="{{ url_for('static', filename='img/logo.png') }}" class="logo-header" alt="SVAG Logo">
-        {% if session.get('user_id') %}
-        <div class="user-actions">
-            <span class="welcome-message">Hola, {{ session.get('nombre_usuario', 'Usuario') }}</span>
-            {# Elige una clase para el botón de cerrar sesión: "btn" (azul) o "btn btn-secondary" (gris) #}
-            <a href="{{ url_for('logout') }}" class="btn btn-secondary">Cerrar Sesión</a>
-        </div>
-        {% endif %}
+        {# ... tu header ... #}
     </div>
 
-    <div class="contenido">
+    <div class="contenido"> {# <--- EL CONTENIDO DEBE ESTAR AQUÍ DENTRO #}
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             <div class="flash-messages">
@@ -31,6 +24,5 @@
 
         {% block content %}{% endblock %}
     </div>
-
 </body>
 </html>

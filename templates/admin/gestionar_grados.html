@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Gestionar Grados{% endblock %}
+{% block content %}
+<h2>Gestionar Grados</h2>
+<p><a href="{{ url_for('agregar_grado') }}" class="btn">Agregar Nuevo Grado</a></p>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre del Grado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for grado in grados %}
+        <tr>
+            <td>{{ grado.id }}</td>
+            <td>{{ grado.nombre }}</td>
+            <td>
+                <a href="{{ url_for('editar_grado', id=grado.id) }}">Editar</a> |
+                <a href="{{ url_for('eliminar_grado', id=grado.id) }}" onclick="return confirm('¿Estás seguro? Se eliminarán también los grupos asociados.');">Eliminar</a>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3">No hay grados registrados.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+<div class="return-link-container">
+    <a href="{{ url_for('dashboard_admin') }}">Volver al Panel de Administrador</a>
+</div>
+{% endblock %}

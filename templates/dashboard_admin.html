@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Panel Administrador{% endblock %}
+{% block content %}
+<h2>Panel del Administrador</h2>
+<p>Bienvenido, {{ session.get('nombre_usuario', 'Admin') }}!</p>
+<ul class="dashboard-links">
+    <li><a href="{{ url_for('admin_gestionar_maestros') }}">Gestionar Maestros</a></li>
+    <li><a href="{{ url_for('admin_gestionar_alumnos') }}">Gestionar Alumnos</a></li>
+    <li><a href="#">Ver Logs del Sistema (Futuro)</a></li>
+    <li><a href="#">Configuración General (Futuro)</a></li>
+</ul>
+{% endblock %}

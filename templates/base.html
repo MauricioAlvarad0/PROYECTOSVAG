@@ -3,15 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}SVAG{% endblock %}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>{% block title %}Sistema SVAG{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+    </head>
 <body>
-    <img src="{{ url_for('static', filename='img/logo.png') }}" class="logo" alt="SVAG Logo">
-    <div class="contenido"> {% block content %}{% endblock %}
+    <div class="page-header">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" class="logo-header" alt="SVAG Logo">
+        {% if session.get('user_id') %}
+        <div class="user-actions">
+            <span class="welcome-message">Hola, {{ session.get('nombre_usuario', 'Usuario') }}</span>
+            {# Elige una clase para el botón de cerrar sesión: "btn" (azul) o "btn btn-secondary" (gris) #}
+            <a href="{{ url_for('logout') }}" class="btn btn-secondary">Cerrar Sesión</a>
+        </div>
+        {% endif %}
     </div>
+
+    <div class="contenido">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-messages">
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
 </body>
 </html>

@@ -2,9 +2,17 @@
 {% block title %}Panel Maestro{% endblock %}
 {% block content %}
 <h2>Panel del Maestro</h2>
-<ul class="dashboard-links"> <li><a href="{{ url_for('mostrar_asistencias') }}">Ver Asistencias</a></li>
+<p>Bienvenido, {{ session.get('nombre_usuario', 'Maestro') }}!</p> {# Añadido para personalización #}
+<ul class="dashboard-links">
+    <li><a href="{{ url_for('mostrar_asistencias') }}">Ver Asistencias de Alumnos</a></li>
     <li><a href="{{ url_for('ver_justificantes') }}">Revisar Justificantes</a></li>
-    <li><a href="{{ url_for('alumnos') }}">Gestionar Alumnos</a></li> {# CORREGIDO PREVIAMENTE #}
-    <li><a href="{{ url_for('maestros') }}">Gestionar Maestros</a></li> {# CAMBIO REALIZADO AQUÍ #}
+    <li><a href="{{ url_for('alumnos_vista_maestro') }}">Ver Lista de Alumnos</a></li> {# CAMBIO REALIZADO AQUÍ #}
+    
+    {# El siguiente enlace es para la gestión completa de maestros, que es una función de Admin.
+       Un maestro normal no podrá acceder, pero el enlace se construirá.
+       Podríamos ocultarlo si el rol no es admin, pero por ahora el decorador en server.py lo protegerá. #}
+    {% if session.get('rol') == 'admin' %}
+    <li><a href="{{ url_for('admin_gestionar_maestros') }}">Gestionar Maestros (Admin)</a></li>
+    {% endif %}
 </ul>
 {% endblock %}

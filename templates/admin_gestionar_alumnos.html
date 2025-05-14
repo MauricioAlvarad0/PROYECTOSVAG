@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Gestionar Alumnos{% endblock %}
+{% block content %}
+<h2>Gestionar Alumnos</h2>
+<p><a href="{{ url_for('admin_agregar_alumno') }}" class="btn">Agregar Nuevo Alumno</a></p>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Matrícula</th>
+            <th>Rol</th>
+            <th>ID Maestro Asignado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for alumno_item in alumnos %} {# Cambiado a alumno_item para claridad #}
+        <tr>
+            <td>{{ alumno_item.id }}</td>
+            <td>{{ alumno_item.nombre }}</td>
+            <td>{{ alumno_item.matricula }}</td>
+            <td>{{ alumno_item.rol | capitalize }}</td>
+            <td>{{ alumno_item.maestro_id if alumno_item.maestro_id is not none else 'N/A' }}</td>
+            <td>
+                <a href="{{ url_for('admin_editar_alumno', id=alumno_item.id) }}">Editar</a> |
+                <a href="{{ url_for('admin_eliminar_alumno', id=alumno_item.id) }}" onclick="return confirm('¿Estás seguro de que deseas eliminar a este alumno? Se podrían borrar también sus asistencias y justificantes si la BD está configurada para ello.');">Eliminar</a>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="6">No hay alumnos registrados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -8,8 +8,60 @@ body {
     flex-direction: column;
     align-items: center;
     color: #ecf0f1;
-    padding-top: 20px;
+    padding-top: 80px; /* Espacio para el .page-header fijo. AJUSTA SI LA ALTURA DEL HEADER CAMBIA */
     box-sizing: border-box;
+}
+
+/* Estilos para el Encabezado de Página (Logo y Acciones de Usuario) */
+.page-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 30px; /* Padding reducido para un header más compacto */
+    box-sizing: border-box;
+    position: fixed; /* Fijar en la parte superior */
+    top: 0;
+    left: 0;
+    background-color: rgba(44, 62, 80, 0.8); /* Fondo semitransparente para el header */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Sombra sutil */
+    z-index: 1000; /* Asegurar que esté por encima de otros elementos */
+}
+
+.logo-header {
+    width: 70px; /* Tamaño del logo en la barra superior */
+    height: auto;
+}
+
+.user-actions {
+    display: flex;
+    align-items: center;
+}
+
+.welcome-message {
+    color: #ecf0f1;
+    margin-right: 15px;
+    font-size: 0.9em;
+}
+
+.user-actions .btn { /* Estilo para el botón de cerrar sesión si usa la clase .btn (azul) */
+    padding: 8px 15px;
+    font-size: 0.9em;
+    margin-top: 0;
+}
+
+.user-actions .btn-secondary { /* Estilo si prefieres el botón de cerrar sesión gris */
+    padding: 8px 15px;
+    font-size: 0.9em;
+    margin-top: 0;
+    background-color: rgba(149, 165, 166, 0.5);
+    color: #ffffff;
+    border: 1px solid rgba(236, 240, 241, 0.5);
+}
+
+.user-actions .btn-secondary:hover {
+    background-color: rgba(127, 140, 141, 0.7);
+    border-color: #ecf0f1;
 }
 
 /* Contenedor Principal */
@@ -22,28 +74,19 @@ body {
     backdrop-filter: blur(8px);
     width: 90%;
     max-width: 600px;
-    margin-top: 20px;
+    margin-top: 20px; /* Margen superior desde el body (que ya tiene padding-top) */
     margin-bottom: 40px;
 }
 
-/* Logo */
-.logo {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 100px;
-    margin-bottom: 20px;
-}
-
-/* Encabezados */
-h2 {
+/* Encabezados dentro de .contenido */
+.contenido h2 {
     font-size: 2.2em;
     color: #3498db;
     margin-bottom: 25px;
     font-weight: 700;
 }
 
-p {
+.contenido p {
     font-size: 1.1em;
     color: #bdc3c7;
     margin-bottom: 25px;
@@ -62,7 +105,7 @@ a:hover {
     text-decoration: underline;
 }
 
-/* Estilos para los botones de formulario y acciones */
+/* Estilos para los botones de formulario y acciones (botones principales azules) */
 input[type="submit"], .btn {
     display: inline-block;
     background-color: #3498db;
@@ -83,38 +126,37 @@ input[type="submit"]:hover, .btn:hover {
     transform: translateY(-2px);
 }
 
-/* Botones secundarios o alternativos */
+/* Botones secundarios (grises, si se usa la clase .btn-secondary explícitamente) */
 .btn-secondary {
     background-color: #95a5a6;
-    color: #2c3e50;
+    color: #2c3e50; /* Texto más oscuro para contraste en botón gris */
 }
 
 .btn-secondary:hover {
     background-color: #7f8c8d;
-    transform: translateY(-2px);
 }
 
+/* Botones de peligro (rojos) */
 .btn-danger {
     background-color: #e74c3c;
 }
 
 .btn-danger:hover {
     background-color: #c0392b;
-    transform: translateY(-2px);
 }
 
-/* Estilos para las listas de navegación (como en dashboard_maestro.html e index.html) */
-ul.dashboard-links, ul.index-links { /* CAMBIO REALIZADO AQUÍ */
+/* Estilos para las listas de navegación (dashboards) */
+ul.dashboard-links, ul.index-links {
     list-style: none;
     padding: 0;
     margin-bottom: 20px;
 }
 
-ul.dashboard-links li, ul.index-links li { /* CAMBIO REALIZADO AQUÍ */
+ul.dashboard-links li, ul.index-links li {
     margin-bottom: 15px;
 }
 
-ul.dashboard-links li a, ul.index-links li a { /* CAMBIO REALIZADO AQUÍ */
+ul.dashboard-links li a, ul.index-links li a {
     display: block;
     background-color: rgba(52, 73, 94, 0.6);
     padding: 15px;
@@ -126,7 +168,7 @@ ul.dashboard-links li a, ul.index-links li a { /* CAMBIO REALIZADO AQUÍ */
     transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
 }
 
-ul.dashboard-links li a:hover, ul.index-links li a:hover { /* CAMBIO REALIZADO AQUÍ */
+ul.dashboard-links li a:hover, ul.index-links li a:hover {
     background-color: #3498db;
     color: #ffffff;
     transform: translateX(5px);
@@ -148,9 +190,10 @@ label {
 
 input[type="text"],
 input[type="password"],
-input[type="email"], 
-textarea {
-    width: calc(100% - 26px);
+input[type="email"],
+textarea,
+select {
+    width: 100%;
     padding: 12px;
     margin-bottom: 20px;
     border: 1px solid #34495e;
@@ -164,7 +207,8 @@ textarea {
 input[type="text"]:focus,
 input[type="password"]:focus,
 input[type="email"]:focus,
-textarea:focus {
+textarea:focus,
+select:focus {
     outline: none;
     border-color: #3498db;
     box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
@@ -202,11 +246,11 @@ tbody tr:nth-child(even) {
     background-color: rgba(52, 73, 94, 0.7);
 }
 
-tbody tr:hover { 
+tbody tr:hover {
     background-color: rgba(82, 103, 124, 0.7);
 }
 
-td a {
+td a { /* Enlaces dentro de celdas de tabla */
     color: #5dade2;
     margin-right: 10px;
     font-weight: 500;
@@ -214,18 +258,16 @@ td a {
 
 td a:hover {
     color: #85c1e9;
-    text-decoration: underline;
 }
 
-td .btn, td input[type="submit"] {
+td .btn, td input[type="submit"] { /* Botones dentro de celdas de tabla */
     padding: 6px 12px;
     font-size: 0.9em;
     margin-top: 0;
     margin-bottom: 5px;
 }
 
-
-/* Estilos para Mensajes Flash */
+/* Estilos para Mensajes Flash (dentro de .contenido) */
 .flash-messages {
     width: 100%;
     margin-bottom: 20px;
@@ -243,7 +285,7 @@ td .btn, td input[type="submit"] {
     font-size: 1.05em;
 }
 
-.alert-error {
+.alert-error, .alert-danger {
     background-color: #e74c3c;
     border-color: #c0392b;
 }
@@ -263,84 +305,132 @@ td .btn, td input[type="submit"] {
     border-color: #d35400;
 }
 
+/* Contenedor y estilos para enlaces de "Regresar" */
+.return-link-container {
+    margin-top: 25px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.return-link-container a {
+    color: #85c1e9; /* Azul claro para destacar */
+    font-weight: 500;
+    text-decoration: none;
+    padding: 8px 15px; /* Para que parezca un poco un botón fantasma */
+    border-radius: 4px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.return-link-container a:hover {
+    color: #ffffff;
+    background-color: rgba(236, 240, 241, 0.1); /* Fondo muy sutil al pasar el ratón */
+    text-decoration: none;
+}
+
 
 /* Media Queries para Responsividad */
 @media (max-width: 768px) {
+    body {
+        padding-top: 70px; /* Ajustar si el header es más pequeño en móviles */
+    }
+    .page-header {
+        padding: 8px 15px;
+        flex-direction: column; /* Apilar logo y acciones en móviles si es necesario */
+        height: auto; /* Permitir que la altura se ajuste */
+    }
+    .logo-header {
+        width: 60px;
+        margin-bottom: 5px; /* Espacio si se apilan */
+    }
+    .user-actions {
+        width: 100%;
+        justify-content: center; /* Centrar acciones de usuario */
+        margin-top: 5px;
+    }
+    .welcome-message {
+        margin-right: 10px;
+    }
+
     .contenido {
-        padding: 25px 30px;
+        padding: 20px 25px;
         margin-left: 10px;
         margin-right: 10px;
         max-width: 95%;
+        margin-top: 15px;
     }
-    h2 {
+    .contenido h2 {
         font-size: 1.9em;
     }
-    input[type="submit"], .btn {
+    input[type="submit"], .btn { /* Botones principales */
         padding: 10px 20px;
         font-size: 1em;
     }
-    ul.dashboard-links li a, ul.index-links li a { /* CAMBIO REALIZADO AQUÍ */
+    .user-actions .btn, .user-actions .btn-secondary { /* Botones en header */
+        font-size: 0.85em;
+        padding: 7px 12px;
+    }
+    ul.dashboard-links li a, ul.index-links li a {
         font-size: 1.1em;
         padding: 12px;
     }
-    .logo {
-        width: 80px;
-    }
     th, td {
         padding: 10px 12px;
+        font-size: 0.95em; /* Ligeramente más grande para legibilidad */
     }
 }
 
 @media (max-width: 480px) {
     body {
-        padding-top: 15px;
+        padding-top: 100px; /* Puede necesitar más espacio si el header se apila y crece */
+    }
+    .page-header {
+        /* Los estilos de flex-direction: column ya hacen que se apile */
+    }
+    .logo-header {
+        width: 50px;
     }
     .contenido {
-        padding: 20px 20px;
-        margin-top: 15px;
+        padding: 15px;
+        margin-top: 10px;
     }
-    .logo {
-        width: 70px;
-        margin-bottom: 15px;
-    }
-    h2 {
-        font-size: 1.7em;
+    .contenido h2 {
+        font-size: 1.6em;
         margin-bottom: 20px;
     }
-    p {
-        font-size: 1em;
-        margin-bottom: 20px;
+    .contenido p {
+        font-size: 0.95em;
     }
-    ul.dashboard-links li a, ul.index-links li a { /* CAMBIO REALIZADO AQUÍ */
+    ul.dashboard-links li a, ul.index-links li a {
         font-size: 1em;
         padding: 10px;
     }
     input[type="text"],
     input[type="password"],
     input[type="email"],
-    textarea {
+    textarea,
+    select {
         padding: 10px;
         font-size: 0.95em;
-        width: calc(100% - 22px);
     }
-    input[type="submit"], .btn {
+    input[type="submit"], .btn { /* Botones principales */
         padding: 10px 15px;
         font-size: 0.95em;
         width: 100%;
         box-sizing: border-box;
     }
-    .btn-secondary, .btn-danger {
+    /* Los botones de header ya se ajustan con las reglas de .user-actions */
+    .btn-secondary, .btn-danger { /* Clases de botón específicas si se usan fuera del header */
         width: 100%;
         box-sizing: border-box;
         margin-bottom: 10px;
     }
-    td .btn, td input[type="submit"] { 
+    td .btn, td input[type="submit"] { /* Botones en tablas */
         width: auto;
         padding: 5px 10px;
         font-size: 0.85em;
     }
     .alert {
         padding: 12px;
-        font-size: 0.95em;
+        font-size: 0.9em;
     }
 }

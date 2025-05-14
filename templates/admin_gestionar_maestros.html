@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Gestionar Maestros{% endblock %}
+{% block content %}
+<h2>Gestionar Maestros</h2>
+<p><a href="{{ url_for('admin_agregar_maestro') }}" class="btn">Agregar Nuevo Maestro</a></p>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for maestro_item in maestros %} {# Cambiado a maestro_item para evitar conflicto con variable 'maestro' en formulario #}
+        <tr>
+            <td>{{ maestro_item.id }}</td>
+            <td>{{ maestro_item.nombre }}</td>
+            <td>{{ maestro_item.usuario }}</td>
+            <td>{{ maestro_item.rol | capitalize }}</td>
+            <td>
+                <a href="{{ url_for('admin_editar_maestro', id=maestro_item.id) }}">Editar</a> |
+                {# No permitir que el admin se elimine a sí mismo desde este enlace directo #}
+                {% if not (session.user_id == maestro_item.id and session.rol == 'admin') %}
+                <a href="{{ url_for('admin_eliminar_maestro', id=maestro_item.id) }}" onclick="return confirm('¿Estás seguro de que deseas eliminar a este maestro? Esto podría afectar a los alumnos y registros asociados.');">Eliminar</a>
+                {% else %}
+                (En sesión)
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5">No hay maestros registrados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

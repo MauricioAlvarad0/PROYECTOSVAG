@@ -1,20 +1,47 @@
 {% extends "base.html" %}
-{% block title %}Alumnos{% endblock %}
+{% block title %}Lista de Alumnos{% endblock %}
+
 {% block content %}
 <h2>Lista de Alumnos</h2>
-<a href="{{ url_for('agregar_alumno') }}">Agregar Nuevo Alumno</a>
+
+{# El parámetro 'es_admin' lo pasamos desde la función alumnos_vista_maestro en server.py #}
+{% if es_admin %}
+    <p><a href="{{ url_for('admin_agregar_alumno') }}" class="btn">Agregar Nuevo Alumno</a></p>
+{% endif %}
+
 <table>
-    <tr><th>ID</th><th>Nombre</th><th>Matrícula</th><th>Acciones</th></tr>
-    {% for a in alumnos %}
-    <tr>
-        <td>{{ a[0] }}</td>
-        <td>{{ a[1] }}</td>
-        <td>{{ a[2] }}</td>
-        <td>
-            <a href="{{ url_for('editar_alumno', id=a[0]) }}">Editar</a> |
-            <a href="{{ url_for('eliminar_alumno', id=a[0]) }}">Eliminar</a>
-        </td>
-    </tr>
-    {% endfor %}
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Matrícula</th>
+            {% if es_admin %}
+                <th>Acciones</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for alumno in alumnos %}
+        <tr>
+            <td>{{ alumno.id if alumno.id is not none else alumno[0] }}</td>
+            <td>{{ alumno.nombre if alumno.nombre is not none else alumno[1] }}</td>
+            <td>{{ alumno.matricula if alumno.matricula is not none else alumno[2] }}</td>
+            {% if es_admin %}
+                <td>
+                    {# Estas rutas para admin_editar_alumno y admin_eliminar_alumno aún necesitan
+                       implementación completa en server.py, pero definimos los enlaces aquí.
+                       Por ahora, usaré las rutas originales que ya estaban protegidas para admin.
+                       En la Etapa 3, podríamos renombrarlas a /admin/alumnos/editar/<id> etc. #}
+                    <a href="{{ url_for('editar_alumno', id=(alumno.id if alumno.id is not none else alumno[0])) }}">Editar</a> |
+                    <a href="{{ url_for('eliminar_alumno', id=(alumno.id if alumno.id is not none else alumno[0])) }}" onclick="return confirm('¿Estás seguro de que deseas eliminar a este alumno?');">Eliminar</a>
+                </td>
+            {% endif %}
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="{{ 4 if es_admin else 3 }}">No hay alumnos para mostrar.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endblock %}

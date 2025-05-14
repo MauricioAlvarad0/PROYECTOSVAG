@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<h2>{{ titulo }}</h2>
+
+<form method="post" action="{{ accion }}">
+    <div>
+        <label for="nombre">Nombre Completo:</label><br>
+        <input type="text" id="nombre" name="nombre" value="{{ maestro.nombre if maestro else '' }}" required>
+    </div>
+    <div>
+        <label for="usuario">Nombre de Usuario (para login):</label><br>
+        <input type="text" id="usuario" name="usuario" value="{{ maestro.usuario if maestro else '' }}" required>
+    </div>
+    <div>
+        <label for="password">Contraseña:</label><br>
+        <input type="password" id="password" name="password" {% if not maestro.id %}required{% endif %}>
+        {% if maestro.id %}<small class="form-text text-muted">Dejar en blanco para no cambiar la contraseña actual.</small>{% endif %}
+    </div>
+    <div>
+        <label for="rol">Rol:</label><br>
+        <select id="rol" name="rol" required>
+            <option value="maestro" {% if maestro.rol == 'maestro' %}selected{% endif %}>Maestro</option>
+            <option value="admin" {% if maestro.rol == 'admin' %}selected{% endif %}>Administrador</option>
+        </select>
+    </div>
+    <br>
+    <input type="submit" value="{{ 'Actualizar' if maestro.id else 'Agregar' }} Maestro" class="btn">
+</form>
+
+<p style="margin-top: 20px;"><a href="{{ url_for('admin_gestionar_maestros') }}">Volver a la lista de maestros</a></p>
+{% endblock %}

@@ -1,38 +1,38 @@
-{% extends "base.html" %}
-{% block title %}{{ titulo }}{% endblock %}
+<div class="form-group">
+    <label for="id_grado">Grado:</label>
+    <select class="form-control" id="id_grado" name="id_grado" required>
+        <option value="">Selecciona un grado</option>
+        {% for grado in grados %}
+            <option value="{{ grado.id_grado }}" {% if alumno and alumno.id_grado == grado.id_grado %}selected{% endif %}>
+                {{ grado.nombre_grado }}
+            </option>
+        {% endfor %}
+    </select>
+</div>
 
-{% block content %}
-<h2>{{ titulo }}</h2>
+<div class="form-group">
+    <label for="id_grupo">Grupo:</label>
+    <select class="form-control" id="id_grupo" name="id_grupo" required>
+        <option value="">Selecciona un grupo</option>
+        {% for grupo in grupos %}
+            <option value="{{ grupo.id_grupo }}" {% if alumno and alumno.id_grupo == grupo.id_grupo %}selected{% endif %}>
+                {{ grupo.nombre_grupo }}
+            </option>
+        {% endfor %}
+    </select>
+</div>
 
-<form method="post" action="{{ accion }}">
-    <div>
-        <label for="nombre">Nombre Completo:</label><br>
-        <input type="text" id="nombre" name="nombre" value="{{ alumno.nombre if alumno else '' }}" required>
-    </div>
-    <div>
-        <label for="matricula">Matrícula (para login):</label><br>
-        <input type="text" id="matricula" name="matricula" value="{{ alumno.matricula if alumno else '' }}" required>
-    </div>
-    <div>
-        <label for="password">Contraseña:</label><br>
-        <input type="password" id="password" name="password" {% if not alumno.id %}required{% endif %}>
-        {% if alumno.id %}<small class="form-text text-muted">Dejar en blanco para no cambiar la contraseña actual.</small>{% endif %}
-    </div>
-    <div>
-        <label for="maestro_id">Maestro Asignado (Opcional):</label><br>
-        <select id="maestro_id" name="maestro_id">
-            <option value="">-- Ninguno --</option>
-            {% for maestro_item in maestros %}
-                <option value="{{ maestro_item.id }}" {% if alumno.maestro_id == maestro_item.id %}selected{% endif %}>
-                    {{ maestro_item.nombre }} (ID: {{ maestro_item.id }})
-                </option>
-            {% endfor %}
-        </select>
-    </div>
-    {# El rol del alumno es fijo 'alumno', no se selecciona en el formulario #}
-    <br>
-    <input type="submit" value="{{ 'Actualizar' if alumno.id else 'Agregar' }} Alumno" class="btn">
-</form>
+<div class="form-group">
+    <label for="nombre_usuario">Nombre de Usuario:</label>
+    <input type="text" class="form-control" id="nombre_usuario" name="nombre_usuario" value="{{ alumno.nombre_usuario if alumno else '' }}" required>
+</div>
 
-<p style="margin-top: 20px;"><a href="{{ url_for('admin_gestionar_alumnos') }}">Volver a la lista de alumnos</a></p>
-{% endblock %}
+<div class="form-group">
+    <label for="contrasena">Contraseña{% if action == 'editar' %} (dejar en blanco para no cambiar){% endif %}:</label>
+    <input type="password" class="form-control" id="contrasena" name="contrasena" {% if action == 'agregar' %}required{% endif %}>
+</div>
+
+<div class="form-group">
+    <label for="confirmar_contrasena">Confirmar Contraseña:</label>
+    <input type="password" class="form-control" id="confirmar_contrasena" name="confirmar_contrasena" {% if action == 'agregar' %}required{% endif %}>
+</div>

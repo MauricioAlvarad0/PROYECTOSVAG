@@ -15,6 +15,6 @@
     <input type="submit" value="{{ 'Actualizar' if materia and materia.id else 'Agregar' }} Materia" class="btn">
 </form>
 <div class="return-link-container">
-    <a href="{{ url_for('gestionar_materias') }}">Cancelar y Volver a Materias</a>
+    <a href="{{ url_for('gestionar_materias') }}" class="btn btn-secondary">Cancelar y Volver a Materias</a>
 </div>
 {% endblock %}

@@ -1,49 +1,86 @@
 {% extends "base.html" %}
-{% block title %}{{ titulo }}{% endblock %}
+
+{% block title %}
+    {{ accion }} Asignación - Administración
+{% endblock %}
+
 {% block content %}
-<h2>{{ titulo }}</h2>
-<form method="post" action="{{ accion_url }}">
-    <div>
-        <label for="maestro_id">Maestro:</label>
-        <select id="maestro_id" name="maestro_id" required>
-            <option value="">-- Seleccione un Maestro --</option>
-            {% for maestro_opt in maestros %}
-            <option value="{{ maestro_opt.id }}" {% if asignacion and asignacion.maestro_id == maestro_opt.id %}selected{% endif %}>
-                {{ maestro_opt.nombre }}
-            </option>
-            {% endfor %}
-        </select>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">{{ accion }} Asignación (Maestro-Materia-Grupo)</h2>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="id_maestro" class="form-label">Maestro:</label>
+                            <select class="form-select" id="id_maestro" name="id_maestro" required>
+                                <option value="">Selecciona un maestro...</option>
+                                {% for maestro_item in maestros %}
+                                    <option value="{{ maestro_item.id }}" {% if asignacion and asignacion.maestro_id == maestro_item.id %}selected{% endif %}>
+                                        {{ maestro_item.nombre }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_materia" class="form-label">Materia:</label>
+                            <select class="form-select" id="id_materia" name="id_materia" required>
+                                <option value="">Selecciona una materia...</option>
+                                {% for materia_item in materias %}
+                                    <option value="{{ materia_item.id }}" {% if asignacion and asignacion.materia_id == materia_item.id %}selected{% endif %}>
+                                        {{ materia_item.nombre }} ({{ materia_item.clave_materia or 'Sin Clave' }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_grupo" class="form-label">Grupo (Grado):</label>
+                            <select class="form-select" id="id_grupo" name="id_grupo" required>
+                                <option value="">Selecciona un grupo...</option>
+                                {% for grupo_item in grupos %}
+                                    {# CORRECCIÓN AQUÍ: Añadido el '>' que faltaba y el '%}' al final de {% endif %} #}
+                                    <option value="{{ grupo_item.id }}" {% if asignacion and asignacion.grupo_id == grupo_item.id %}selected{% endif %}>
+                                        {{ grupo_item.nombre_completo_grupo }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="ciclo_escolar" class="form-label">Ciclo Escolar (Ej: 2025-A):</label>
+                            <input type="text" class="form-control" id="ciclo_escolar" name="ciclo_escolar"
+                                   value="{{ asignacion.ciclo_escolar if asignacion else '' }}" required
+                                   placeholder="Ej: 2025-A, 2025-B">
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{{ url_for('admin_gestionar_asignaciones') }}" class="btn btn-secondary me-md-2 mb-2 mb-md-0">
+                                <i class="fas fa-times-circle me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i>Guardar {{ accion }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-    <div>
-        <label for="materia_id">Materia:</label>
-        <select id="materia_id" name="materia_id" required>
-            <option value="">-- Seleccione una Materia --</option>
-            {% for materia_opt in materias %}
-            <option value="{{ materia_opt.id }}" {% if asignacion and asignacion.materia_id == materia_opt.id %}selected{% endif %}>
-                {{ materia_opt.nombre }}
-            </option>
-            {% endfor %}
-        </select>
-    </div>
-    <div>
-        <label for="grupo_id">Grupo:</label>
-        <select id="grupo_id" name="grupo_id" required>
-            <option value="">-- Seleccione un Grupo --</option>
-            {% for grupo_opt in grupos %}
-            <option value="{{ grupo_opt.id }}" {% if asignacion and asignacion.grupo_id == grupo_opt.id %}selected{% endif %}>
-                {{ grupo_opt.nombre_completo_grupo }}
-            </option>
-            {% endfor %}
-        </select>
-    </div>
-    <div>
-        <label for="ciclo_escolar">Ciclo Escolar (ej. 2025-A, 2025-2026):</label>
-        <input type="text" id="ciclo_escolar" name="ciclo_escolar" value="{{ asignacion.ciclo_escolar if asignacion else '' }}" required>
-    </div>
-    <br>
-    <input type="submit" value="{{ 'Actualizar' if asignacion and asignacion.id else 'Agregar' }} Asignación" class="btn">
-</form>
-<div class="return-link-container">
-    <a href="{{ url_for('gestionar_asignaciones') }}">Cancelar y Volver a Asignaciones</a>
 </div>
 {% endblock %}

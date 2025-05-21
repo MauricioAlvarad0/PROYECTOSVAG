@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Vista General de Usuarios{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Vista General de Todos los Usuarios</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <section class="mb-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Maestros y Administradores</h3>
+            </div>
+            {% if maestros_admins %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre Completo</th>
+                            <th>Usuario (Login)</th>
+                            <th>Rol</th>
+                            <th class="text-center">Acciones Rápidas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario_ma in maestros_admins %}
+                        <tr>
+                            <td>{{ usuario_ma.id }}</td>
+                            <td>{{ usuario_ma.nombre if usuario_ma.nombre else '-' }}</td>
+                            <td>{{ usuario_ma.usuario }}</td>
+                            <td>{{ usuario_ma.rol | capitalize }}</td>
+                            <td class="text-center">
+                                {# CORRECCIÓN AQUÍ: id_maestro=usuario_ma.id #}
+                                <a href="{{ url_for('admin_editar_maestro', id_maestro=usuario_ma.id) }}" class="btn btn-sm btn-warning" title="Editar Maestro/Admin">
+                                    <i class="fas fa-edit"></i> <span class="d-none d-md-inline">Editar</span>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="card-body">
+                <p class="mb-0">No hay maestros o administradores registrados.</p>
+            </div>
+            {% endif %}
+            <div class="card-footer">
+                <a href="{{ url_for('admin_gestionar_maestros') }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-users-cog me-2"></i>Gestionar Maestros/Admins
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h3 class="mb-0">Alumnos</h3>
+            </div>
+            {% if alumnos %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre Completo</th>
+                            <th>Matrícula</th>
+                            <th>Grado - Grupo</th>
+                            <th>Rol</th>
+                            <th class="text-center">Acciones Rápidas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for alumno_item in alumnos %}
+                        <tr>
+                            <td>{{ alumno_item.id }}</td>
+                            <td>{{ alumno_item.nombre }}</td>
+                            <td>{{ alumno_item.matricula }}</td>
+                            {# La consulta en server.py ya prepara 'nombre_grupo_completo' #}
+                            <td>{{ alumno_item.nombre_grupo_completo }}</td> 
+                            <td>{{ alumno_item.rol | capitalize }}</td>
+                            <td class="text-center">
+                                {# CORRECCIÓN AQUÍ: id_alumno=alumno_item.id #}
+                                <a href="{{ url_for('admin_editar_alumno', id_alumno=alumno_item.id) }}" class="btn btn-sm btn-warning" title="Editar Alumno">
+                                    <i class="fas fa-edit"></i> <span class="d-none d-md-inline">Editar</span>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="card-body">
+                <p class="mb-0">No hay alumnos registrados.</p>
+            </div>
+            {% endif %}
+            <div class="card-footer">
+                 <a href="{{ url_for('admin_gestionar_alumnos') }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-user-graduate me-2"></i>Gestionar Alumnos
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <div class="mt-4 mb-4">
+        <a href="{{ url_for('dashboard_admin') }}" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Volver al Panel Principal</a>
+    </div>
+</div>
+{% endblock %}

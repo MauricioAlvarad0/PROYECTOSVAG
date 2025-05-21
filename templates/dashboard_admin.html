@@ -1,22 +1,32 @@
 {% extends "base.html" %}
-{% block title %}Panel Administrador{% endblock %}
+{% block title %}Panel de Administrador - SVAG{% endblock %}
 
 {% block content %}
-<h2>Panel del Administrador</h2>
-<p>Bienvenido, {{ session.get('nombre_usuario', 'Admin') }}!</p>
+<h2>Panel de Administración</h2>
+<p>Bienvenido, {{ nombre_usuario }}!</p>
 
-<ul class="dashboard-links">
-    <li><a href="{{ url_for('gestionar_grados') }}">Gestionar Grados</a></li>
-    <li><a href="{{ url_for('gestionar_grupos') }}">Gestionar Grupos</a></li>
-    <li><a href="{{ url_for('gestionar_materias') }}">Gestionar Materias</a></li>
-    <li><hr></li>
-    <li><a href="{{ url_for('admin_gestionar_maestros') }}">Gestionar Maestros y Administradores</a></li>
-    <li><a href="{{ url_for('admin_gestionar_alumnos') }}">Gestionar Alumnos</a></li>
-    <li><hr></li>
-    <li><a href="{{ url_for('gestionar_asignaciones') }}">Gestionar Asignaciones (Maestro-Materia-Grupo)</a></li>
-    {# Futuro:
-    <li><a href="#">Ver Logs del Sistema</a></li>
-    <li><a href="#">Configuración General</a></li>
-    #}
+<h3>Gestión General:</h3>
+<ul>
+    <li><a href="{{ url_for('admin_vista_general') }}">Vista General de Usuarios</a></li> {# Corregido #}
 </ul>
+
+<h3>Gestión de Usuarios:</h3>
+<ul>
+    <li><a href="{{ url_for('admin_gestionar_alumnos') }}">Gestionar Alumnos</a></li>
+    <li><a href="{{ url_for('admin_gestionar_maestros') }}">Gestionar Maestros</a></li>
+</ul>
+
+<h3>Gestión Académica:</h3>
+<ul>
+    <li><a href="{{ url_for('admin_gestionar_grados') }}">Gestionar Grados</a></li> {# Corregido #}
+    <li><a href="{{ url_for('admin_gestionar_grupos') }}">Gestionar Grupos</a></li> {# Corregido #}
+    <li><a href="{{ url_for('admin_gestionar_materias') }}">Gestionar Materias</a></li> {# Corregido #}
+    <li><a href="{{ url_for('admin_gestionar_asignaciones') }}">Gestionar Asignaciones (Maestro-Materia-Grupo)</a></li>
+</ul>
+
+{# Puedes agregar más enlaces aquí según sea necesario #}
+
+<br>
+<p><a href="{{ url_for('logout') }}" class="btn btn-danger">Cerrar Sesión</a></p>
+
 {% endblock %}

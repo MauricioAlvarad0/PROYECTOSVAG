@@ -1,37 +1,84 @@
 {% extends "base.html" %}
 {% block title %}Gestionar Alumnos{% endblock %}
+
 {% block content %}
-<h2>Gestionar Alumnos</h2>
-<p><a href="{{ url_for('admin_agregar_alumno') }}" class="btn">Agregar Nuevo Alumno</a></p>
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Matrícula</th>
-            <th>Rol</th>
-            <th>ID Maestro Asignado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for alumno_item in alumnos %} {# Cambiado a alumno_item para claridad #}
-        <tr>
-            <td>{{ alumno_item.id }}</td>
-            <td>{{ alumno_item.nombre }}</td>
-            <td>{{ alumno_item.matricula }}</td>
-            <td>{{ alumno_item.rol | capitalize }}</td>
-            <td>{{ alumno_item.maestro_id if alumno_item.maestro_id is not none else 'N/A' }}</td>
-            <td>
-                <a href="{{ url_for('admin_editar_alumno', id=alumno_item.id) }}">Editar</a> |
-                <a href="{{ url_for('admin_eliminar_alumno', id=alumno_item.id) }}" onclick="return confirm('¿Estás seguro de que deseas eliminar a este alumno? Se podrían borrar también sus asistencias y justificantes si la BD está configurada para ello.');">Eliminar</a>
-            </td>
-        </tr>
+<div class="container mt-4">
+    <h2 class="mb-4">Gestionar Alumnos</h2>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <a href="{{ url_for('admin_agregar_alumno') }}" class="btn btn-primary"><i class="fas fa-plus-circle me-2"></i>Agregar Nuevo Alumno</a>
+        </div>
+        <form method="GET" action="{{ url_for('admin_gestionar_alumnos') }}" class="d-flex">
+            <input type="text" name="q" class="form-control me-2" placeholder="Buscar por nombre o matrícula..." value="{{ request.args.get('q', '') }}">
+            <button type="submit" class="btn btn-outline-secondary" title="Buscar"><i class="fas fa-search"></i></button>
+            {% if request.args.get('q') %}
+                <a href="{{ url_for('admin_gestionar_alumnos') }}" class="btn btn-outline-danger ms-2" title="Limpiar búsqueda"><i class="fas fa-times"></i></a>
+            {% endif %}
+        </form>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {# Esta es la sección clave para mostrar los alumnos #}
+    {% if alumnos %} 
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre Completo</th>
+                    <th>Matrícula</th>
+                    <th>Grado - Grupo</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alumno_item in alumnos %}
+                <tr>
+                    <td>{{ alumno_item.id }}</td>
+                    {# Usar el alias 'nombre_alumno' de la consulta en server.py #}
+                    <td>{{ alumno_item.nombre_alumno }}</td> 
+                    <td>{{ alumno_item.matricula }}</td>
+                    {# Usa 'nombre_grupo_completo' que la consulta en server.py ya prepara #}
+                    <td>{{ alumno_item.nombre_grupo_completo }}</td>
+                    <td class="text-center">
+                        {# Asegúrate que tus rutas esperan 'id_alumno' #}
+                        <a href="{{ url_for('admin_editar_alumno', id_alumno=alumno_item.id) }}" class="btn btn-sm btn-warning me-1" title="Editar">
+                            <i class="fas fa-edit"></i> <span class="d-none d-md-inline">Editar</span>
+                        </a>
+                        <form action="{{ url_for('admin_eliminar_alumno', id_alumno=alumno_item.id) }}" method="POST" style="display:inline-block;">
+                            <button type="submit" class="btn btn-sm btn-danger" title="Eliminar" onclick="return confirm('¿Estás seguro de eliminar a este alumno?');">
+                                <i class="fas fa-trash-alt"></i> <span class="d-none d-md-inline">Eliminar</span>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %} {# Cierre del bucle for #}
+            </tbody>
+        </table>
+    </div>
+    {% else %} {# Esto se mostrará si la variable 'alumnos' está vacía o no se pasa #}
+        <div class="alert alert-info mt-3">
+        {% if request.args.get('q') %}
+            <p class="mb-0">No se encontraron alumnos que coincidan con tu búsqueda: "<strong>{{ request.args.get('q') }}</strong>".</p>
         {% else %}
-        <tr>
-            <td colspan="6">No hay alumnos registrados.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+            <p class="mb-0">No hay alumnos registrados. Puedes <a href="{{ url_for('admin_agregar_alumno') }}">agregar uno nuevo</a>.</p>
+        {% endif %}
+        </div>
+    {% endif %} {# Cierre del if alumnos #}
+
+    <div class="mt-4">
+        <a href="{{ url_for('dashboard_admin') }}" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Volver al Panel</a>
+    </div>
+</div>
 {% endblock %}

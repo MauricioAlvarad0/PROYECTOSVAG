@@ -2,7 +2,9 @@
 {% block title %}Gestionar Materias{% endblock %}
 {% block content %}
 <h2>Gestionar Materias</h2>
-<p><a href="{{ url_for('agregar_materia') }}" class="btn">Agregar Nueva Materia</a></p>
+<div style="margin-bottom: 20px;">
+    <a href="{{ url_for('agregar_materia') }}" class="btn">Agregar Nueva Materia</a>
+</div>
 <table>
     <thead>
         <tr>
@@ -19,8 +21,9 @@
             <td>{{ materia.clave_materia if materia.clave_materia else 'N/A' }}</td>
             <td>{{ materia.nombre }}</td>
             <td>
-                <a href="{{ url_for('editar_materia', id=materia.id) }}">Editar</a> |
-                <a href="{{ url_for('eliminar_materia', id=materia.id) }}" onclick="return confirm('¿Estás seguro? Las asignaciones de esta materia se eliminarán.');">Eliminar</a>
+                {# <a href="#" class="btn btn-sm">Ver Asignaciones</a>  Podríamos añadir esto en el futuro #}
+                <a href="{{ url_for('editar_materia', id=materia.id) }}" class="btn btn-sm btn-secondary">Editar</a>
+                <a href="{{ url_for('eliminar_materia', id=materia.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro? Las asignaciones de esta materia se eliminarán.');">Eliminar</a>
             </td>
         </tr>
         {% else %}
@@ -29,6 +32,6 @@
     </tbody>
 </table>
 <div class="return-link-container">
-    <a href="{{ url_for('dashboard_admin') }}">Volver al Panel de Administrador</a>
+    <a href="{{ url_for('dashboard_admin') }}" class="btn btn-secondary">Volver al Panel de Administrador</a>
 </div>
 {% endblock %}

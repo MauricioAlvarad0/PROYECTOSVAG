@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+<h2>{{ titulo_pagina }}</h2>
+
+{% if alumnos %}
+<p>Mostrando {{ alumnos|length }} alumno(s) para {{ tipo_agrupacion }}: <strong>{{ nombre_agrupacion }}</strong>.</p>
+<table>
+    <thead>
+        <tr>
+            <th>ID Alumno</th>
+            <th>Matrícula</th>
+            <th>Nombre Completo</th>
+            {% if tipo_agrupacion == "Grado" %} {# Mostrar grupo si estamos viendo por grado #}
+            <th>Grupo</th>
+            {% endif %}
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for alumno in alumnos %}
+        <tr>
+            <td>{{ alumno.id }}</td>
+            <td>{{ alumno.matricula }}</td>
+            <td>{{ alumno.nombre }}</td>
+            {% if tipo_agrupacion == "Grado" %}
+            <td>{{ alumno.nombre_grupo if alumno.nombre_grupo else 'N/A' }}</td>
+            {% endif %}
+            <td>
+                <a href="{{ url_for('admin_editar_alumno', id=alumno.id) }}" class="btn btn-sm btn-secondary">Editar Alumno</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No hay alumnos para mostrar para {{ tipo_agrupacion }}: <strong>{{ nombre_agrupacion }}</strong>.</p>
+{% endif %}
+
+<div class="return-link-container" style="margin-top: 30px;">
+    <a href="{{ url_volver }}" class="btn btn-secondary">Volver a la lista anterior</a>
+</div>
+
+{% endblock %}

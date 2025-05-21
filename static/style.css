@@ -18,18 +18,18 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 30px; /* Padding reducido para un header más compacto */
+    padding: 10px 30px;
     box-sizing: border-box;
-    position: fixed; /* Fijar en la parte superior */
+    position: fixed;
     top: 0;
     left: 0;
-    background-color: rgba(44, 62, 80, 0.8); /* Fondo semitransparente para el header */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Sombra sutil */
-    z-index: 1000; /* Asegurar que esté por encima de otros elementos */
+    background-color: rgba(44, 62, 80, 0.85); /* Un poco más opaco */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000;
 }
 
 .logo-header {
-    width: 70px; /* Tamaño del logo en la barra superior */
+    width: 70px;
     height: auto;
 }
 
@@ -44,37 +44,35 @@ body {
     font-size: 0.9em;
 }
 
-.user-actions .btn { /* Estilo para el botón de cerrar sesión si usa la clase .btn (azul) */
+.user-actions .btn, 
+.user-actions .btn-secondary { /* Estilo para botones en el header */
     padding: 8px 15px;
     font-size: 0.9em;
     margin-top: 0;
 }
-
-.user-actions .btn-secondary { /* Estilo si prefieres el botón de cerrar sesión gris */
-    padding: 8px 15px;
-    font-size: 0.9em;
-    margin-top: 0;
-    background-color: rgba(149, 165, 166, 0.5);
+/* Específico para btn-secondary en header si quieres un look diferente */
+.user-actions .btn-secondary {
+    background-color: rgba(149, 165, 166, 0.6); /* Más transparente */
     color: #ffffff;
-    border: 1px solid rgba(236, 240, 241, 0.5);
+    border: 1px solid rgba(236, 240, 241, 0.3);
 }
-
 .user-actions .btn-secondary:hover {
-    background-color: rgba(127, 140, 141, 0.7);
+    background-color: rgba(127, 140, 141, 0.8);
     border-color: #ecf0f1;
 }
+
 
 /* Contenedor Principal */
 .contenido {
     text-align: center;
-    background: rgba(44, 62, 80, 0.7);
+    background: rgba(44, 62, 80, 0.75); /* Ligeramente más opaco */
     padding: 30px 40px;
     border-radius: 10px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(8px);
     width: 90%;
-    max-width: 600px;
-    margin-top: 20px; /* Margen superior desde el body (que ya tiene padding-top) */
+    max-width: 900px; /* Un poco más ancho para tablas más grandes */
+    margin-top: 20px;
     margin-bottom: 40px;
 }
 
@@ -93,104 +91,108 @@ body {
     line-height: 1.6;
 }
 
-/* Estilos para los Enlaces (generales y de navegación en texto) */
 a {
     color: #5dade2;
     text-decoration: none;
     transition: color 0.3s ease;
 }
-
 a:hover {
     color: #85c1e9;
     text-decoration: underline;
 }
 
-/* Estilos para los botones de formulario y acciones (botones principales azules) */
+/* Botones */
 input[type="submit"], .btn {
     display: inline-block;
     background-color: #3498db;
     color: #ffffff;
-    padding: 12px 25px;
+    padding: 10px 20px; /* Ajustado para consistencia */
     border: none;
     border-radius: 5px;
-    font-size: 1.1em;
+    font-size: 1em; /* Ajustado para consistencia */
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
     margin-top: 15px;
     text-decoration: none;
+    line-height: normal; /* Para asegurar alineación vertical del texto */
 }
-
 input[type="submit"]:hover, .btn:hover {
     background-color: #2980b9;
     transform: translateY(-2px);
 }
 
-/* Botones secundarios (grises, si se usa la clase .btn-secondary explícitamente) */
 .btn-secondary {
-    background-color: #95a5a6;
-    color: #2c3e50; /* Texto más oscuro para contraste en botón gris */
+    background-color: #7f8c8d; /* Gris más oscuro */
+    color: #ffffff;
 }
-
 .btn-secondary:hover {
-    background-color: #7f8c8d;
+    background-color: #6c7a7b;
 }
 
-/* Botones de peligro (rojos) */
 .btn-danger {
     background-color: #e74c3c;
 }
-
 .btn-danger:hover {
     background-color: #c0392b;
 }
 
-/* Estilos para las listas de navegación (dashboards) */
-ul.dashboard-links, ul.index-links {
+.btn-sm { /* Para botones más pequeños, útil en tablas */
+    padding: 5px 10px;
+    font-size: 0.875em;
+    border-radius: 3px;
+    margin-right: 5px; /* Espacio si hay varios botones juntos */
+    margin-top: 0; /* Quitar margen superior para botones en línea */
+    margin-bottom: 5px; /* Espacio inferior para botones en línea */
+}
+.btn-sm:last-child {
+    margin-right: 0;
+}
+
+
+/* Listas de Navegación (Dashboards) */
+ul.dashboard-links { /* Removido , ul.index-links si no se usa */
     list-style: none;
     padding: 0;
     margin-bottom: 20px;
+    text-align: left; /* Para que los items se alineen a la izquierda */
 }
-
-ul.dashboard-links li, ul.index-links li {
-    margin-bottom: 15px;
+ul.dashboard-links li {
+    margin-bottom: 10px; /* Reducido */
 }
-
-ul.dashboard-links li a, ul.index-links li a {
+ul.dashboard-links li a {
     display: block;
-    background-color: rgba(52, 73, 94, 0.6);
-    padding: 15px;
+    background-color: rgba(52, 73, 94, 0.7);
+    padding: 12px 18px; /* Ajustado */
     border-radius: 5px;
     color: #ecf0f1;
-    font-size: 1.2em;
+    font-size: 1.1em; /* Ajustado */
     font-weight: 500;
     text-decoration: none;
     transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
 }
-
-ul.dashboard-links li a:hover, ul.index-links li a:hover {
+ul.dashboard-links li a:hover {
     background-color: #3498db;
     color: #ffffff;
     transform: translateX(5px);
 }
 
-/* Estilos para Formularios */
+/* Formularios */
 form {
     margin-top: 20px;
+    text-align: left; /* Para que labels y campos se alineen a la izquierda */
 }
-
 label {
     display: block;
     font-size: 1em;
     color: #bdc3c7;
     margin-bottom: 8px;
-    text-align: left;
     font-weight: 500;
 }
-
 input[type="text"],
 input[type="password"],
 input[type="email"],
+input[type="date"], /* Añadido para consistencia */
 textarea,
 select {
     width: 100%;
@@ -203,219 +205,190 @@ select {
     font-size: 1em;
     box-sizing: border-box;
 }
-
 input[type="text"]:focus,
 input[type="password"]:focus,
 input[type="email"]:focus,
+input[type="date"]:focus,
 textarea:focus,
 select:focus {
     outline: none;
     border-color: #3498db;
     box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
 }
+form small { /* Para texto de ayuda en formularios */
+    display: block;
+    margin-top: -15px;
+    margin-bottom: 15px;
+    font-size: 0.85em;
+    color: #95a5a6;
+}
 
-/* Estilos para Tablas */
+/* Tablas */
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 25px;
-    background-color: rgba(44, 62, 80, 0.9); /* Fondo oscuro para tablas (si usas tema oscuro) */
-    /* Si quieres un tema más claro como el que te propuse antes, sería:
-    background-color: #ffffff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    */
+    background-color: rgba(38, 50, 56, 0.85); /* Ligeramente diferente para tablas */
     border-radius: 8px;
-    overflow: hidden; /* Para que el border-radius afecte a las celdas */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* Sombra para tema oscuro */
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    color: #cfd8dc; /* Texto un poco más claro para tablas */
 }
-
 th, td {
     padding: 12px 15px;
     text-align: left;
-    border-bottom: 1px solid #34495e; /* Separadores oscuros */
-    /* Para tema claro:
-    border-bottom: 1px solid #e9ecef;
-    */
+    border-bottom: 1px solid #455a64; /* Separadores ligeramente más claros */
 }
-
 th {
-    background-color: #3498db; /* Encabezados de tabla azules */
+    background-color: #3498db;
     color: #ffffff;
-    font-weight: 500;
-    font-size: 1.05em;
-    /* Para tema claro:
-    background-color: #f8f9fa;
-    color: #495057;
-    font-weight: 600;
-    font-size: 0.9em;
-    text-transform: uppercase;
+    font-weight: 600; /* Más peso para encabezados */
+    font-size: 1em; /* Ajustado */
+    text-transform: uppercase; /* Encabezados en mayúsculas */
     letter-spacing: 0.5px;
-    */
 }
-
 tr:last-child td {
     border-bottom: none;
 }
-
 tbody tr:nth-child(even) {
-    background-color: rgba(52, 73, 94, 0.7); /* Intercalado de filas oscuro */
-    /* Para tema claro:
-    background-color: #fbfcfc;
-    */
+    background-color: rgba(55, 71, 79, 0.7); /* Intercalado de filas */
 }
-
 tbody tr:hover {
-    background-color: rgba(82, 103, 124, 0.7); /* Resaltado oscuro */
-    /* Para tema claro:
-    background-color: #f1f4f6;
-    */
+    background-color: rgba(84, 110, 122, 0.7); /* Resaltado */
 }
-
-td a { /* Enlaces dentro de celdas de tabla */
-    color: #5dade2; /* Azul claro para enlaces en tema oscuro */
-    /* Para tema claro: color: #3498db; */
-    margin-right: 10px;
+td a {
+    color: #80cbc4; /* Un color turquesa para enlaces en tablas */
+    margin-right: 5px; /* Reducido */
     font-weight: 500;
 }
-
 td a:hover {
-    color: #85c1e9; /* Más claro al pasar el ratón */
-    /* Para tema claro: color: #2980b9; */
+    color: #b2dfdb;
+    text-decoration: underline;
+}
+td .btn, td .btn-secondary, td .btn-danger, td .btn-sm { /* Estilos para botones dentro de celdas de tabla */
+    margin-top: 0; /* Asegurar que no tengan margen superior extra */
+    margin-bottom: 0; /* Y tampoco inferior si están en la misma línea */
+    margin-right: 5px;
+}
+td .btn:last-child, td .btn-secondary:last-child, td .btn-danger:last-child, td .btn-sm:last-child {
+    margin-right: 0;
 }
 
-td .btn, td input[type="submit"] { /* Botones dentro de celdas de tabla */
-    padding: 6px 12px;
-    font-size: 0.9em;
-    margin-top: 0;
-    margin-bottom: 5px;
+
+/* Mensajes Flash */
+.flash-messages {
+    width: 100%;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+.alert {
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    color: #ffffff;
+    text-align: center;
+    font-weight: 500;
+    font-size: 1.05em;
+}
+.alert-error, .alert-danger {
+    background-color: #e74c3c;
+    border-color: #c0392b;
+}
+.alert-success {
+    background-color: #2ecc71;
+    border-color: #27ae60;
+}
+.alert-info {
+    background-color: #3498db;
+    border-color: #2980b9;
+}
+.alert-warning {
+    background-color: #f39c12;
+    border-color: #d35400;
 }
 
-/* Contenedor y estilos para enlaces de "Regresar" */
+/* Contenedor para enlaces de "Regresar" */
 .return-link-container {
     margin-top: 25px;
     margin-bottom: 10px;
     text-align: center;
 }
-
 .return-link-container a {
-    color: #85c1e9; /* Azul claro para destacar */
+    color: #85c1e9;
     font-weight: 500;
     text-decoration: none;
-    padding: 8px 15px; /* Para que parezca un poco un botón fantasma */
+    padding: 8px 15px;
     border-radius: 4px;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
-
 .return-link-container a:hover {
     color: #ffffff;
-    background-color: rgba(236, 240, 241, 0.1); /* Fondo muy sutil al pasar el ratón */
+    background-color: rgba(236, 240, 241, 0.1);
     text-decoration: none;
 }
 
+/* Media Queries */
+@media (max-width: 992px) { /* Ajuste para tabletas */
+    .contenido {
+        max-width: 95%;
+        padding: 25px 30px;
+    }
+}
 
-/* Media Queries para Responsividad */
 @media (max-width: 768px) {
     body {
-        padding-top: 70px; /* Ajustar si el header es más pequeño en móviles */
+        padding-top: 60px; /* Reducir si el header se compacta */
     }
     .page-header {
         padding: 8px 15px;
-        flex-direction: column; /* Apilar logo y acciones en móviles si es necesario */
-        height: auto; /* Permitir que la altura se ajuste */
+        /* Considerar apilar logo y acciones si es necesario */
+        /* flex-direction: column; align-items: flex-start; */
     }
-    .logo-header {
-        width: 60px;
-        margin-bottom: 5px; /* Espacio si se apilan */
+    .logo-header { width: 60px; }
+    .user-actions { /* Ajustar si se apila */
+        /* width: 100%; justify-content: flex-end; margin-top: 5px; */
     }
-    .user-actions {
-        width: 100%;
-        justify-content: center; /* Centrar acciones de usuario */
-        margin-top: 5px;
-    }
-    .welcome-message {
-        margin-right: 10px;
-    }
+    .welcome-message { display: none; } /* Ocultar en pantallas pequeñas */
 
     .contenido {
         padding: 20px 25px;
-        margin-left: 10px;
-        margin-right: 10px;
-        max-width: 95%;
         margin-top: 15px;
     }
-    .contenido h2 {
-        font-size: 1.9em;
-    }
-    input[type="submit"], .btn { /* Botones principales */
-        padding: 10px 20px;
-        font-size: 1em;
-    }
-    .user-actions .btn, .user-actions .btn-secondary { /* Botones en header */
-        font-size: 0.85em;
-        padding: 7px 12px;
-    }
-    ul.dashboard-links li a, ul.index-links li a {
-        font-size: 1.1em;
-        padding: 12px;
-    }
-    th, td {
-        padding: 10px 12px;
-        font-size: 0.95em; /* Ligeramente más grande para legibilidad */
-    }
+    .contenido h2 { font-size: 1.9em; }
+    input[type="submit"], .btn { padding: 10px 18px; font-size: 0.95em; }
+    ul.dashboard-links li a { font-size: 1em; padding: 10px 15px; }
+    th, td { padding: 10px 12px; font-size: 0.9em; }
+    .alert { font-size: 0.95em; }
 }
 
 @media (max-width: 480px) {
     body {
-        padding-top: 100px; /* Puede necesitar más espacio si el header se apila y crece */
+        padding-top: 100px; /* Puede necesitar más si el header se apila y crece */
     }
     .page-header {
-        /* Los estilos de flex-direction: column ya hacen que se apile */
+        flex-direction: column;
+        align-items: center;
+        height: auto;
+        padding-bottom: 10px;
     }
-    .logo-header {
-        width: 50px;
+    .logo-header { margin-bottom: 8px; }
+    .user-actions { width: auto; margin-top: 8px; }
+
+
+    .contenido { padding: 15px; margin-top: 10px; }
+    .contenido h2 { font-size: 1.6em; margin-bottom: 20px; }
+    .contenido p { font-size: 0.95em; }
+    ul.dashboard-links li a { font-size: 0.95em; }
+    input[type="text"], input[type="password"], input[type="email"], input[type="date"], textarea, select {
+        padding: 10px; font-size: 0.9em;
     }
-    .contenido {
-        padding: 15px;
-        margin-top: 10px;
+    input[type="submit"], .btn { /* Botones principales llenan ancho */
+        width: 100%; box-sizing: border-box; margin-bottom: 10px;
     }
-    .contenido h2 {
-        font-size: 1.6em;
-        margin-bottom: 20px;
-    }
-    .contenido p {
-        font-size: 0.95em;
-    }
-    ul.dashboard-links li a, ul.index-links li a {
-        font-size: 1em;
-        padding: 10px;
-    }
-    input[type="text"],
-    input[type="password"],
-    input[type="email"],
-    textarea,
-    select {
-        padding: 10px;
-        font-size: 0.95em;
-    }
-    input[type="submit"], .btn { /* Botones principales */
-        padding: 10px 15px;
-        font-size: 0.95em;
-        width: 100%;
-        box-sizing: border-box;
-    }
-    /* Los botones de header ya se ajustan con las reglas de .user-actions */
-    .btn-secondary, .btn-danger { /* Clases de botón específicas si se usan fuera del header */
-        width: 100%;
-        box-sizing: border-box;
-        margin-bottom: 10px;
-    }
-    td .btn, td input[type="submit"] { /* Botones en tablas */
+    .btn-sm, td .btn, td .btn-secondary, td .btn-danger { /* Botones en tablas o pequeños mantienen su ancho */
         width: auto;
-        padding: 5px 10px;
-        font-size: 0.85em;
+        padding: 5px 10px; font-size: 0.8em;
     }
-    .alert {
-        padding: 12px;
-        font-size: 0.9em;
-    }
+    .alert { padding: 12px; font-size: 0.9em; }
 }

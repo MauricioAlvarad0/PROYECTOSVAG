@@ -3,7 +3,13 @@ from werkzeug.security import generate_password_hash
 import random # Para generar datos de prueba más variados
 import os
 
-DATABASE_NAME = 'svag_escolar.db'
+# --- Definir la ruta absoluta a la base de datos ---
+# Obtiene el directorio donde reside este archivo (database.py)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Define el nombre de la base de datos para que esté en el mismo directorio que database.py
+DATABASE_NAME = os.path.join(BASE_DIR, 'svag_escolar.db')
+# Ahora DATABASE_NAME será algo como /home/mauricio/PROYECTO/PROYECTOSVAG/svag_escolar.db
+# --- Fin de la definición de ruta absoluta ---
 
 # Listas para generar nombres y apellidos aleatorios
 NOMBRES_MASCULINOS = [
@@ -55,7 +61,6 @@ def get_db():
     return conn
 
 def crear_db():
-    # Eliminar la base de datos anterior si existe para asegurar una creación limpia con los nuevos datos
     if os.path.exists(DATABASE_NAME):
         os.remove(DATABASE_NAME)
         print(f"Base de datos '{DATABASE_NAME}' anterior eliminada para recreación.")
@@ -70,17 +75,15 @@ def crear_db():
             nombre TEXT NOT NULL UNIQUE
         )
     ''')
-
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Grupos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             grado_id INTEGER NOT NULL,
-            nombre TEXT NOT NULL, -- Ej: "A", "B"
+            nombre TEXT NOT NULL,
             FOREIGN KEY (grado_id) REFERENCES Grados (id) ON DELETE CASCADE,
             UNIQUE (grado_id, nombre)
         )
     ''')
-
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Materias (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -99,7 +102,6 @@ def crear_db():
             rol TEXT NOT NULL DEFAULT 'maestro' CHECK(rol IN ('maestro', 'admin'))
         )
     ''')
-
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Alumnos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -141,7 +143,6 @@ def crear_db():
             FOREIGN KEY (asignacion_id) REFERENCES Maestros_Materias_Grupos (id) ON DELETE CASCADE
         )
     ''')
-
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Justificantes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -161,10 +162,9 @@ def crear_db():
             FOREIGN KEY (maestro_revisor_id) REFERENCES Maestros (id) ON DELETE SET NULL
         )
     ''')
-    conn.commit() # Commit para asegurar que las tablas existan antes de insertar datos
+    conn.commit()
     print("Tablas creadas exitosamente.")
 
-    # --- INSERCIÓN DE DATOS DE PRUEBA ---
     print("Iniciando inserción de datos de prueba...")
     try:
         # Grados
@@ -181,37 +181,30 @@ def crear_db():
 
         # Grupos
         print("Insertando Grupos...")
-        grupos_por_grado_letras = ["A", "B"] # Letras para los grupos
-        grupo_ids_general = [] # Lista de todos los IDs de grupo para asignar alumnos
-        
-        for nombre_grado_str, grado_id_val in grado_ids.items(): # nombre_grado_str es el nombre del grado, ej "1er Semestre"
+        grupos_por_grado_letras = ["A", "B"]
+        grupo_ids_general = []
+        for nombre_grado_str, grado_id_val in grado_ids.items():
             for letra_grupo in grupos_por_grado_letras:
                 try:
                     cursor.execute("INSERT OR IGNORE INTO Grupos (grado_id, nombre) VALUES (?, ?)", (grado_id_val, letra_grupo))
                     conn.commit()
-                    # Obtener el ID del grupo recién insertado o ya existente
                     cursor.execute("SELECT id FROM Grupos WHERE grado_id = ? AND nombre = ?", (grado_id_val, letra_grupo))
                     grupo_row = cursor.fetchone()
                     if grupo_row:
                         current_grupo_id = grupo_row['id']
-                        # No necesitamos la estructura grupos_por_grado como antes, solo la lista general de IDs
                         grupo_ids_general.append(current_grupo_id)
-                        print(f"Grupo procesado/insertado: Grado '{nombre_grado_str}' (ID: {grado_id_val}) - Grupo '{letra_grupo}', Grupo ID: {current_grupo_id}")
+                        # print(f"Grupo procesado/insertado: Grado '{nombre_grado_str}' (ID: {grado_id_val}) - Grupo '{letra_grupo}', Grupo ID: {current_grupo_id}")
                     else:
                         print(f"ERROR: No se pudo obtener el ID para el grupo {letra_grupo} del grado {nombre_grado_str}")
                 except sqlite3.Error as e_grupo:
                     print(f"Error al insertar grupo {letra_grupo} para grado ID {grado_id_val}: {e_grupo}")
-        
         if not grupo_ids_general:
-            print("ADVERTENCIA CRÍTICA: No se crearon grupos. La inserción de alumnos y asignaciones probablemente fallará o estará vacía.")
-            # Considerar salir o manejar este error de forma más drástica si los grupos son esenciales.
+            print("ADVERTENCIA CRÍTICA: No se crearon grupos.")
         else:
-            print(f"Grupos procesados. Total de IDs de grupo para alumnos: {len(grupo_ids_general)}")
-        
+            print(f"Grupos procesados. Total de IDs de grupo para alumnos: {len(grupo_ids_general)}. IDs: {grupo_ids_general}")
         if not grupo_ids_general:
-            print("ADVERTENCIA: No se crearon grupos, la inserción de alumnos fallará.")
-            return
-
+            print("ADVERTENCIA: No se crearon grupos, la inserción de datos posteriores podría fallar.")
+            # No retornamos aquí para que el resto de la inserción pueda intentarse o fallar explícitamente.
 
         # Materias
         materias_data = [
@@ -230,8 +223,7 @@ def crear_db():
             materia_row = cursor.fetchone()
             if materia_row:
                  materia_ids[clave_materia] = materia_row['id']
-        print(f"Materias insertadas: {len(materia_ids)} materias.")
-
+        print(f"Materias insertadas: {len(materia_ids)} materias. Claves: {list(materia_ids.keys())}")
 
         # Maestros
         admin_pass_hash = generate_password_hash('adminpass')
@@ -250,7 +242,6 @@ def crear_db():
         ]
         maestro_ids = {}
         if id_admin: maestro_ids['admin'] = id_admin
-
         for nombre_maestro, user_maestro, pass_maestro in maestros_data:
             cursor.execute("INSERT OR IGNORE INTO Maestros (nombre, usuario, password, rol) VALUES (?, ?, ?, ?)",
                            (nombre_maestro, user_maestro, pass_maestro, 'maestro'))
@@ -259,65 +250,95 @@ def crear_db():
             maestro_row = cursor.fetchone()
             if maestro_row:
                 maestro_ids[user_maestro] = maestro_row['id']
-        print(f"Maestros insertados: {len(maestro_ids)} maestros.")
-        if not maestro_ids:
-            print("ADVERTENCIA: No se crearon maestros.")
+        print(f"Maestros insertados: {len(maestro_ids)} maestros. Usuarios: {list(maestro_ids.keys())}")
+        if not maestro_ids or (len(maestros_data) > 0 and len([k for k in maestro_ids if k != 'admin']) == 0) :
+            print("ADVERTENCIA: No se crearon maestros de prueba (además del admin) o sus IDs no se recuperaron.")
 
-
-        # Alumnos (aproximadamente 30 por grupo)
+        # Alumnos
         print(f"Intentando generar alumnos para {len(grupo_ids_general)} grupos...")
-        alumnos_por_grupo = 30
-        matricula_counter = 2025000 # Iniciar contador de matrículas
+        alumnos_por_grupo_target = 30
+        matricula_counter = 2025000
         alumno_password_hash = generate_password_hash("alumno123")
-        alumno_ids_por_grupo = {gid: [] for gid in grupo_ids_general}
+        alumno_ids_por_grupo = {gid: [] for gid in grupo_ids_general} # Asegura que todas las claves de grupo existen
 
-        for grupo_id_val in grupo_ids_general:
-            print(f"Generando alumnos para Grupo ID: {grupo_id_val}")
-            for i in range(alumnos_por_grupo):
-                genero = random.choice(["masculino", "femenino"])
-                nombre_alumno = generar_nombre_completo(genero)
-                matricula_alumno = f"A{matricula_counter}"
-                matricula_counter += 1
-                try:
-                    cursor.execute("INSERT INTO Alumnos (nombre, matricula, password, grupo_id, rol) VALUES (?, ?, ?, ?, ?)",
-                                   (nombre_alumno, matricula_alumno, alumno_password_hash, grupo_id_val, 'alumno'))
-                    conn.commit()
-                    alumno_ids_por_grupo[grupo_id_val].append(cursor.lastrowid)
-                except sqlite3.IntegrityError: # En caso de colisión de matrícula (poco probable con este contador)
-                    print(f"Error de integridad al insertar alumno con matrícula {matricula_alumno}, intentando con nueva matrícula.")
-                    matricula_counter += 1 # Asegurar que la próxima sea diferente
+        if grupo_ids_general:
+            for grupo_id_val in grupo_ids_general:
+                # print(f"Generando alumnos para Grupo ID: {grupo_id_val}") # Menos verboso
+                alumnos_insertados_en_grupo = 0
+                for i in range(alumnos_por_grupo_target):
+                    genero = random.choice(["masculino", "femenino"])
+                    nombre_alumno = generar_nombre_completo(genero)
                     matricula_alumno = f"A{matricula_counter}"
-                    matricula_counter +=1
-                    cursor.execute("INSERT OR IGNORE INTO Alumnos (nombre, matricula, password, grupo_id, rol) VALUES (?, ?, ?, ?, ?)",
-                                   (nombre_alumno, matricula_alumno, alumno_password_hash, grupo_id_val, 'alumno'))
-                    conn.commit()
-                    if cursor.lastrowid:
-                         alumno_ids_por_grupo[grupo_id_val].append(cursor.lastrowid)
+                    matricula_counter += 1
+                    try:
+                        cursor.execute("INSERT INTO Alumnos (nombre, matricula, password, grupo_id, rol) VALUES (?, ?, ?, ?, ?)",
+                                       (nombre_alumno, matricula_alumno, alumno_password_hash, grupo_id_val, 'alumno'))
+                        conn.commit()
+                        last_id = cursor.lastrowid
+                        if last_id:
+                             # La clave grupo_id_val debe existir por la inicialización de alumno_ids_por_grupo
+                            alumno_ids_por_grupo[grupo_id_val].append(last_id)
+                            alumnos_insertados_en_grupo += 1
+                    except sqlite3.IntegrityError:
+                        # print(f"Error de integridad al insertar alumno con matrícula {matricula_alumno}, reintentando.") # Menos verboso
+                        matricula_counter += random.randint(1,5)
+                        matricula_alumno_new = f"A{matricula_counter}"
+                        matricula_counter +=1
+                        cursor.execute("INSERT OR IGNORE INTO Alumnos (nombre, matricula, password, grupo_id, rol) VALUES (?, ?, ?, ?, ?)",
+                                       (nombre_alumno, matricula_alumno_new, alumno_password_hash, grupo_id_val, 'alumno'))
+                        conn.commit()
+                        last_id_retry = cursor.lastrowid
+                        if last_id_retry:
+                            alumno_ids_por_grupo[grupo_id_val].append(last_id_retry)
+                            alumnos_insertados_en_grupo +=1
+                print(f"Grupo ID {grupo_id_val}: {alumnos_insertados_en_grupo} alumnos insertados.")
+        else:
+            print("ADVERTENCIA: No hay grupos para generar alumnos.")
 
-            print(f"Grupo ID {grupo_id_val}: {len(alumno_ids_por_grupo[grupo_id_val])} alumnos insertados.")
 
         # Asignaciones Maestros-Materias-Grupos
+        print("DEBUG: Iniciando creación de Asignaciones Maestros-Materias-Grupos...")
         asignaciones_insertadas = 0
-        list_maestro_keys = [k for k in maestro_ids.keys() if k != 'admin']
+        # Excluir 'admin' de la lista de maestros disponibles para enseñar, a menos que quieras que también enseñe.
+        list_maestro_keys_para_ensenar = [k for k in maestro_ids.keys() if k != 'admin' and maestro_ids[k] is not None]
         list_materia_keys = list(materia_ids.keys())
         
-        if list_maestro_keys and list_materia_keys and grupo_ids_general:
+        print(f"DEBUG: Maestros disponibles para enseñar (claves): {list_maestro_keys_para_ensenar}")
+        print(f"DEBUG: Materias disponibles (claves): {list_materia_keys}")
+        print(f"DEBUG: Grupos disponibles (IDs): {grupo_ids_general}")
+
+        if list_maestro_keys_para_ensenar and list_materia_keys and grupo_ids_general:
             for grupo_id_val in grupo_ids_general:
-                # Asignar 2-3 materias diferentes a cada grupo con diferentes maestros
                 materias_asignadas_a_grupo = random.sample(list_materia_keys, min(len(list_materia_keys), random.randint(2,4)))
-                maestros_disponibles = list_maestro_keys[:] # Copia para poder remover
+                maestros_disponibles_para_grupo = list_maestro_keys_para_ensenar[:] 
 
                 for clave_materia in materias_asignadas_a_grupo:
-                    if not maestros_disponibles: break # No más maestros para asignar
+                    if not maestros_disponibles_para_grupo:
+                        print(f"DEBUG: No más maestros disponibles para asignar a materia '{clave_materia}' en grupo {grupo_id_val}")
+                        break 
+                    
+                    print(f"DEBUG: Intentando asignar materia con clave '{clave_materia}' en grupo {grupo_id_val}.")
+                    if clave_materia not in materia_ids:
+                        print(f"DEBUG ERROR: clave_materia '{clave_materia}' no encontrada en materia_ids. Saltando.")
+                        continue
                     id_materia_actual = materia_ids[clave_materia]
                     
-                    # Seleccionar un maestro que no haya sido asignado a esta materia en este grupo (lógica simplificada)
-                    maestro_usuario_actual = random.choice(maestros_disponibles)
+                    maestro_usuario_actual = random.choice(maestros_disponibles_para_grupo)
+                    print(f"DEBUG: Maestro seleccionado (usuario): '{maestro_usuario_actual}'.")
+                    if maestro_usuario_actual not in maestro_ids:
+                        print(f"DEBUG ERROR: maestro_usuario_actual '{maestro_usuario_actual}' no encontrado en maestro_ids. Saltando.")
+                        continue
                     id_maestro_actual = maestro_ids[maestro_usuario_actual]
-                    # maestros_disponibles.remove(maestro_usuario_actual) # Para evitar que el mismo maestro de todas las materias del grupo (opcional)
+                    
+                    # Opcional: remover para que no de todas las materias el mismo maestro al mismo grupo
+                    # try:
+                    #     maestros_disponibles_para_grupo.remove(maestro_usuario_actual)
+                    # except ValueError:
+                    #     pass # Ya fue removido, no importa
 
-                    ciclo = "2025-A" # Ciclo escolar de ejemplo
+                    ciclo = "2025-A"
                     try:
+                        print(f"DEBUG: Insertando asignación MMG: MaestroID={id_maestro_actual}, MateriaID={id_materia_actual}, GrupoID={grupo_id_val}, Ciclo={ciclo}")
                         cursor.execute("""
                             INSERT OR IGNORE INTO Maestros_Materias_Grupos
                             (maestro_id, materia_id, grupo_id, ciclo_escolar)
@@ -327,56 +348,95 @@ def crear_db():
                         if cursor.lastrowid:
                             asignaciones_insertadas += 1
                     except sqlite3.Error as e_asig:
-                        print(f"Error al insertar asignación: {e_asig}")
+                        print(f"Error al insertar asignación: MaestroID={id_maestro_actual}, MateriaID={id_materia_actual}, GrupoID={grupo_id_val}. Error: {e_asig}")
             print(f"Asignaciones Maestros-Materias-Grupos insertadas: {asignaciones_insertadas}")
         else:
-            print("ADVERTENCIA: No se pudieron crear asignaciones por falta de maestros, materias o grupos.")
+            print("ADVERTENCIA: No se pudieron crear asignaciones por falta de maestros (no admin), materias o grupos.")
 
 
         # Asistencias (algunas de ejemplo)
+        print("DEBUG: Iniciando creación de Asistencias...")
         cursor.execute("SELECT id FROM Maestros_Materias_Grupos")
         todas_las_asignaciones = cursor.fetchall()
         asistencias_insertadas = 0
+
+        print(f"DEBUG: Total de asignaciones MMG encontradas para asistencias: {len(todas_las_asignaciones)}")
+        # print(f"DEBUG: Contenido de alumno_ids_por_grupo para Asistencias: {alumno_ids_por_grupo}")
+
 
         if todas_las_asignaciones and any(len(alumnos) > 0 for alumnos in alumno_ids_por_grupo.values()):
             fechas_ejemplo = ["2025-05-01", "2025-05-02", "2025-05-03", "2025-05-06", "2025-05-07"]
             estados_asistencia = ['Presente', 'Ausente', 'Retardo']
             
-            for asignacion_row in random.sample(todas_las_asignaciones, min(len(todas_las_asignaciones), 5)): # Tomar 5 asignaciones al azar
+            num_asignaciones_para_asistencia = min(len(todas_las_asignaciones), 5)
+            if num_asignaciones_para_asistencia == 0 and len(todas_las_asignaciones) > 0: # Asegurar que se procese al menos una si hay
+                 num_asignaciones_para_asistencia = 1
+            
+            print(f"DEBUG: Se tomarán {num_asignaciones_para_asistencia} asignaciones al azar para generar asistencias.")
+
+            for asignacion_row in random.sample(todas_las_asignaciones, num_asignaciones_para_asistencia):
                 asignacion_id = asignacion_row['id']
+                print(f"DEBUG Asistencias: Procesando asignacion_id: {asignacion_id}")
                 
-                # Obtener grupo_id de la asignación para buscar alumnos de ese grupo
                 cursor.execute("SELECT grupo_id FROM Maestros_Materias_Grupos WHERE id = ?", (asignacion_id,))
                 grupo_de_asignacion_row = cursor.fetchone()
-                if not grupo_de_asignacion_row: continue
-                grupo_id_de_asignacion = grupo_de_asignacion_row['id'] # Corrección: debe ser grupo_de_asignacion_row['grupo_id']
+                
+                if not grupo_de_asignacion_row:
+                    print(f"DEBUG Asistencias: No se encontró grupo_id para asignacion_id: {asignacion_id}. Saltando.")
+                    continue
+                
+                grupo_id_de_asignacion = grupo_de_asignacion_row['grupo_id'] # Correcto
+                print(f"DEBUG Asistencias: asignacion_id: {asignacion_id}, grupo_id_de_asignacion recuperado: {grupo_id_de_asignacion}")
 
-                if grupo_id_de_asignacion in alumno_ids_por_grupo and alumno_ids_por_grupo[grupo_id_de_asignacion]:
-                    alumnos_del_grupo = alumno_ids_por_grupo[grupo_id_de_asignacion]
-                    for alumno_id_val in random.sample(alumnos_del_grupo, min(len(alumnos_del_grupo), 10)): # 10 alumnos al azar del grupo
-                        for fecha in fechas_ejemplo:
-                            estado = random.choice(estados_asistencia)
-                            hora = f"{random.randint(7,18):02d}:{random.randint(0,59):02d}"
-                            cursor.execute("""
-                                INSERT OR IGNORE INTO Asistencias (alumno_id, asignacion_id, fecha, hora, estado)
-                                VALUES (?, ?, ?, ?, ?)
-                            """, (alumno_id_val, asignacion_id, fecha, hora, estado))
-                            conn.commit()
-                            if cursor.lastrowid: asistencias_insertadas +=1
+                if grupo_id_de_asignacion in alumno_ids_por_grupo:
+                    if alumno_ids_por_grupo[grupo_id_de_asignacion]:
+                        alumnos_del_grupo = alumno_ids_por_grupo[grupo_id_de_asignacion]
+                        print(f"DEBUG Asistencias: Grupo {grupo_id_de_asignacion} tiene {len(alumnos_del_grupo)} alumnos. Tomando muestra.")
+                        
+                        num_alumnos_para_asistencia = min(len(alumnos_del_grupo), 10)
+                        if num_alumnos_para_asistencia == 0 and len(alumnos_del_grupo) > 0 :
+                             num_alumnos_para_asistencia = 1
+                        
+                        if not alumnos_del_grupo: # Chequeo extra
+                            print(f"DEBUG Asistencias: Lista de alumnos para grupo {grupo_id_de_asignacion} está vacía después de todo. Saltando.")
+                            continue
+
+                        for alumno_id_val in random.sample(alumnos_del_grupo, num_alumnos_para_asistencia):
+                            for fecha in fechas_ejemplo:
+                                estado = random.choice(estados_asistencia)
+                                hora = f"{random.randint(7,18):02d}:{random.randint(0,59):02d}"
+                                cursor.execute("""
+                                    INSERT OR IGNORE INTO Asistencias (alumno_id, asignacion_id, fecha, hora, estado)
+                                    VALUES (?, ?, ?, ?, ?)
+                                """, (alumno_id_val, asignacion_id, fecha, hora, estado))
+                                conn.commit()
+                                if cursor.lastrowid: asistencias_insertadas +=1
+                    else:
+                        print(f"DEBUG Asistencias: Grupo {grupo_id_de_asignacion} no tiene alumnos listados en alumno_ids_por_grupo[{grupo_id_de_asignacion}].")
+                else:
+                    print(f"DEBUG Asistencias ERROR: grupo_id_de_asignacion {grupo_id_de_asignacion} (de asignacion_id {asignacion_id}) NO ESTÁ en alumno_ids_por_grupo. Claves disponibles: {list(alumno_ids_por_grupo.keys())}")
             print(f"Asistencias de ejemplo insertadas: {asistencias_insertadas}")
         else:
-            print("ADVERTENCIA: No se pudieron crear asistencias por falta de asignaciones o alumnos.")
-
+            if not todas_las_asignaciones:
+                 print("ADVERTENCIA: No se pudieron crear asistencias por falta de ASIGNACIONES.")
+            if not any(len(alumnos) > 0 for alumnos in alumno_ids_por_grupo.values()):
+                 print("ADVERTENCIA: No se pudieron crear asistencias por falta de ALUMNOS en los grupos.")
 
     except sqlite3.Error as e:
-        print(f"Error GENERAL durante la inserción de datos de prueba: {e}")
+        print(f"Error GENERAL de SQLite durante la inserción de datos de prueba: {e}")
+    except KeyError as ke:
+        print(f"Excepción KeyError durante la inserción de datos de prueba: {ke}. Esto usualmente indica un problema al acceder a un diccionario con una clave inexistente.")
     except Exception as ex:
-        print(f"Excepción inesperada durante la inserción de datos de prueba: {ex}")
+        # Imprimir el traceback completo para excepciones inesperadas
+        import traceback
+        print(f"Excepción INESPERADA durante la inserción de datos de prueba: {ex}")
+        traceback.print_exc() # Esto dará más detalles de dónde ocurrió el error "No item with that key"
     finally:
-        conn.close()
-        print(f"Base de datos '{DATABASE_NAME}' verificada/creada con el nuevo esquema escolar y datos de prueba masivos.")
+        if conn: # Asegurarse de que la conexión se cierre
+            conn.close()
+        print(f"Proceso de creación/verificación de '{DATABASE_NAME}' completado (con o sin errores en datos de prueba).")
 
 if __name__ == '__main__':
     print(f"Creando/Verificando la base de datos '{DATABASE_NAME}' directamente desde database.py...")
     crear_db()
-    print("Proceso de base de datos (ejecución directa de database.py) completado.")
+    print("Proceso de base de datos (ejecución directa de database.py) finalizado.")

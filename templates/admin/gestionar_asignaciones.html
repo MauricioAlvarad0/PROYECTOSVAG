@@ -1,51 +1,75 @@
 {% extends "base.html" %}
-{% block title %}Gestionar Asignaciones{% endblock %}
+{% block title %}Gestionar Asignaciones (Maestro-Materia-Grupo){% endblock %}
 
 {% block content %}
-<h2>Gestionar Asignaciones (Maestro - Materia - Grupo)</h2>
+<div class="container mt-4">
+    <h2 class="mb-4">Gestionar Asignaciones <small class="text-muted">(Maestro-Materia-Grupo)</small></h2>
 
-<div style="margin-bottom: 20px;"> {# Contenedor para el botón de agregar #}
-    <a href="{{ url_for('agregar_asignacion') }}" class="btn">Agregar Nueva Asignación</a>
-</div>
+    <div class="mb-3">
+        <a href="{{ url_for('admin_agregar_asignacion') }}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-2"></i>Crear Nueva Asignación
+        </a>
+    </div>
 
-{% if asignaciones %}
-<table> {# La etiqueta table usará los estilos globales de tu style.css #}
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Ciclo Escolar</th>
-            <th>Maestro</th>
-            <th>Materia</th>
-            <th>Grado - Grupo</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for asignacion in asignaciones %}
-        <tr>
-            <td>{{ asignacion.id }}</td>
-            <td>{{ asignacion.ciclo_escolar }}</td>
-            <td>{{ asignacion.nombre_maestro }}</td>
-            <td>{{ asignacion.nombre_materia }}</td>
-            <td>{{ asignacion.nombre_grado }} - {{ asignacion.nombre_grupo }}</td>
-            <td>
-                {# <a href="#" class="btn btn-sm btn-secondary">Editar</a> #} {# Ejemplo si quieres botón editar #}
-                <a href="{{ url_for('eliminar_asignacion', id=asignacion.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de eliminar esta asignación? Las asistencias y justificantes vinculados se verán afectados.');">Eliminar</a>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            {# Ajustar colspan al número de columnas si cambia #}
-            <td colspan="6">No hay asignaciones registradas.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>No hay asignaciones registradas actualmente.</p>
-{% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
-<div class="return-link-container" style="margin-top: 30px;">
-    <a href="{{ url_for('dashboard_admin') }}">Volver al Panel de Administrador</a>
+    {% if asignaciones %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Materia</th>
+                    <th>Maestro</th>
+                    <th>Grupo (Grado)</th>
+                    <th>Ciclo Escolar</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {# Este es el bucle que necesita cerrarse #}
+                {% for asignacion in asignaciones %}
+                <tr>
+                    <td>{{ asignacion.id }}</td>
+                    <td>{{ asignacion.nombre_materia }}</td>
+                    <td>{{ asignacion.nombre_maestro }}</td>
+                    <td>{{ asignacion.nombre_grupo_literal }} ({{ asignacion.nombre_grado }})</td>
+                    <td>{{ asignacion.ciclo_escolar }}</td>
+                    <td class="text-center">
+                        {# No hay ruta de edición para asignaciones en el server.py proporcionado, #}
+                        {# Si la hubiera, se añadiría aquí. Ejemplo: #}
+                        {# <a href="{{ url_for('admin_editar_asignacion', id_asignacion=asignacion.id) }}" class="btn btn-sm btn-warning me-1" title="Editar">
+                            <i class="fas fa-edit"></i> <span class="d-none d-md-inline">Editar</span>
+                        </a> #}
+                        <form action="{{ url_for('admin_eliminar_asignacion', id_asignacion=asignacion.id) }}" method="POST" style="display:inline-block;">
+                            <button type="submit" class="btn btn-sm btn-danger" title="Eliminar"
+                                    onclick="return confirm('¿Estás seguro de eliminar esta asignación? Las asistencias vinculadas podrían ser eliminadas si está configurado ON DELETE CASCADE.');">
+                                <i class="fas fa-trash-alt"></i> <span class="d-none d-md-inline">Eliminar</span>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %} {# <--- ESTA ES LA ETIQUETA DE CIERRE PARA EL BUCLE 'for asignacion in asignaciones' #}
+            </tbody>
+        </table>
+    </div>
+    {% else %} {# Esto pertenece al 'if asignaciones' #}
+    <div class="alert alert-info mt-3">
+        <p class="mb-0">No hay asignaciones registradas. Puedes <a href="{{ url_for('admin_agregar_asignacion') }}">crear una nueva</a>.</p>
+    </div>
+    {% endif %} {# Esto cierra el 'if asignaciones' #}
+
+    <div class="mt-4">
+        <a href="{{ url_for('dashboard_admin') }}" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Volver al Panel</a>
+    </div>
 </div>
 {% endblock %}

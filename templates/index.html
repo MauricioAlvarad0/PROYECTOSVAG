@@ -5,10 +5,10 @@
 <h2>Bienvenido al sistema SVAG</h2>
 <p>Por favor, inicia sesión para continuar.</p>
 
-{# El bloque de mensajes flash que estaba aquí FUE ELIMINADO #}
+{# Bloque de mensajes flash ya presente en base.html, se mostrará si hay mensajes #}
 
-<form method="post" action="{{ url_for('login') }}"> {# Asumiendo que tu ruta de login es 'login' #}
-    <label for="identificador">Matrícula:</label><br>
+<form method="post" action="{{ url_for('login_unificado') }}"> {# <--- CAMBIO AQUÍ #}
+    <label for="identificador">Usuario / Matrícula / No. Empleado:</label><br> {# <--- Etiqueta más descriptiva #}
     <input type="text" id="identificador" name="identificador" required><br>
 
     <label for="password">Contraseña:</label><br>

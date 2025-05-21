@@ -1,40 +1,75 @@
 {% extends "base.html" %}
 {% block title %}Gestionar Usuarios (Maestros/Admins){% endblock %}
+
 {% block content %}
-<h2>Gestionar Usuarios (Maestros y Administradores)</h2>
-<p><a href="{{ url_for('admin_agregar_maestro') }}" class="btn">Agregar Nuevo Usuario</a></p>
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Usuario (Login)</th>
-            <th>Rol</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for m in maestros %} {# Cambiado a 'm' para evitar conflicto con variable global 'maestro' #}
-        <tr>
-            <td>{{ m.id }}</td>
-            <td>{{ m.nombre if m.nombre else '-' }}</td>
-            <td>{{ m.usuario }}</td>
-            <td>{{ m.rol | capitalize }}</td>
-            <td>
-                <a href="{{ url_for('admin_editar_maestro', id=m.id) }}">Editar</a>
-                {% if not (session.user_id == m.id and session.rol == 'admin') %}
-                | <a href="{{ url_for('admin_eliminar_maestro', id=m.id) }}" onclick="return confirm('¿Estás seguro? Las asignaciones y revisiones de este usuario se verán afectadas.');">Eliminar</a>
-                {% else %}
-                | (En sesión)
-                {% endif %}
-            </td>
-        </tr>
-        {% else %}
-        <tr><td colspan="5">No hay usuarios maestros/admin registrados.</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
-<div class="return-link-container">
-    <a href="{{ url_for('dashboard_admin') }}">Volver al Panel de Administrador</a>
+<div class="container mt-4">
+    <h2 class="mb-4">Gestionar Usuarios (Maestros y Administradores)</h2>
+    <p><a href="{{ url_for('admin_agregar_maestro') }}" class="btn btn-primary"><i class="fas fa-plus-circle me-2"></i>Agregar Nuevo Usuario</a></p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if maestros %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Usuario (Login)</th>
+                    <th>Rol</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m_item in maestros %} {# Cambiado a 'm_item' para mayor claridad y evitar conflictos #}
+                <tr>
+                    <td>{{ m_item.id }}</td>
+                    <td>{{ m_item.nombre if m_item.nombre else '-' }}</td>
+                    <td>{{ m_item.usuario }}</td>
+                    <td>{{ m_item.rol | capitalize }}</td>
+                    <td class="text-center">
+                        {# CORRECCIÓN AQUÍ: id_maestro=m_item.id #}
+                        <a href="{{ url_for('admin_editar_maestro', id_maestro=m_item.id) }}" class="btn btn-sm btn-warning me-1" title="Editar">
+                            <i class="fas fa-edit"></i> <span class="d-none d-md-inline">Editar</span>
+                        </a>
+                        
+                        {# Prevenir auto-eliminación del admin en sesión o hacerla más segura #}
+                        {% if session.get('user_id') == m_item.id and session.get('user_role') == 'admin' %}
+                            <button class="btn btn-sm btn-secondary" disabled title="No puedes eliminarte a ti mismo (Admin en sesión)">
+                                <i class="fas fa-trash-alt"></i> <span class="d-none d-md-inline">Eliminar</span>
+                            </button>
+                        {% else %}
+                            {# CORRECCIÓN AQUÍ: id_maestro=m_item.id y convertir a formulario POST #}
+                            <form action="{{ url_for('admin_eliminar_maestro', id_maestro=m_item.id) }}" method="POST" style="display:inline-block;">
+                                <button type="submit" class="btn btn-sm btn-danger" title="Eliminar" 
+                                        onclick="return confirm('¿Estás seguro de eliminar a este usuario? Las asignaciones de clases y revisiones de justificantes de este usuario podrían verse afectadas.');">
+                                    <i class="fas fa-trash-alt"></i> <span class="d-none d-md-inline">Eliminar</span>
+                                </button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %} {# Fin del bucle for #}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info mt-3">
+        <p class="mb-0">No hay usuarios maestros o administradores registrados. Puedes <a href="{{ url_for('admin_agregar_maestro') }}">agregar uno nuevo</a>.</p>
+    </div>
+    {% endif %} {# Fin del if maestros #}
+
+    <div class="mt-4">
+        <a href="{{ url_for('dashboard_admin') }}" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Volver al Panel</a>
+    </div>
 </div>
 {% endblock %}

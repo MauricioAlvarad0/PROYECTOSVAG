@@ -1,27 +1,51 @@
 {% extends "base.html" %}
-{% block title %}{{ titulo }}{% endblock %}
+
+{% block title %}
+    {{ accion }} Grupo - Administración
+{% endblock %}
+
 {% block content %}
-<h2>{{ titulo }}</h2>
-<form method="post" action="{{ accion_url }}">
-    <div>
-        <label for="grado_id">Grado:</label>
-        <select id="grado_id" name="grado_id" required>
-            <option value="">-- Seleccione un Grado --</option>
-            {% for grado_opt in grados %}
-            <option value="{{ grado_opt.id }}" {% if grupo_actual and grupo_actual.grado_id == grado_opt.id %}selected{% endif %}>
-                {{ grado_opt.nombre }}
-            </option>
-            {% endfor %}
-        </select>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">{{ accion }} Grupo</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="nombre_grupo" class="form-label">Nombre del Grupo (Ej: A, B, C):</label>
+                            <input type="text" class="form-control" id="nombre_grupo" name="nombre_grupo"
+                                   value="{{ grupo.nombre if grupo else '' }}" required
+                                   pattern="[A-Za-z0-9\s]+" title="Solo letras, números y espacios.">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_grado" class="form-label">Grado al que Pertenece:</label>
+                            <select class="form-select" id="id_grado" name="id_grado" required>
+                                <option value="">Selecciona un grado...</option>
+                                {% for grado_item in grados %}
+                                    <option value="{{ grado_item.id }}" {% if grupo and grupo.grado_id == grado_item.id %}selected{% endif %}>
+                                        {{ grado_item.nombre }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            {# CORRECCIÓN AQUÍ: 'admin_gestionar_grupos' en lugar de 'gestionar_grupos' #}
+                            <a href="{{ url_for('admin_gestionar_grupos') }}" class="btn btn-secondary me-md-2 mb-2 mb-md-0">
+                                <i class="fas fa-times-circle me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i>Guardar {{ accion }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-    <div>
-        <label for="nombre">Nombre del Grupo (ej. A, B, Único):</label>
-        <input type="text" id="nombre" name="nombre" value="{{ grupo_actual.nombre if grupo_actual else '' }}" required>
-    </div>
-    <br>
-    <input type="submit" value="{{ 'Actualizar' if grupo_actual and grupo_actual.id else 'Agregar' }} Grupo" class="btn">
-</form>
-<div class="return-link-container">
-    <a href="{{ url_for('gestionar_grupos') }}">Cancelar y Volver a Grupos</a>
 </div>
 {% endblock %}

@@ -1,32 +1,65 @@
 {% extends "base.html" %}
 {% block title %}Gestionar Grados{% endblock %}
+
 {% block content %}
-<h2>Gestionar Grados</h2>
-<p><a href="{{ url_for('agregar_grado') }}" class="btn">Agregar Nuevo Grado</a></p>
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nombre del Grado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for grado in grados %}
-        <tr>
-            <td>{{ grado.id }}</td>
-            <td>{{ grado.nombre }}</td>
-            <td>
-                <a href="{{ url_for('editar_grado', id=grado.id) }}">Editar</a> |
-                <a href="{{ url_for('eliminar_grado', id=grado.id) }}" onclick="return confirm('¿Estás seguro? Se eliminarán también los grupos asociados.');">Eliminar</a>
-            </td>
-        </tr>
-        {% else %}
-        <tr><td colspan="3">No hay grados registrados.</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
-<div class="return-link-container">
-    <a href="{{ url_for('dashboard_admin') }}">Volver al Panel de Administrador</a>
+<div class="container mt-4">
+    <h2 class="mb-4">Gestionar Grados</h2>
+
+    <div class="mb-3">
+        {# CORRECCIÓN AQUÍ: 'admin_agregar_grado' en lugar de 'agregar_grado' #}
+        <a href="{{ url_for('admin_agregar_grado') }}" class="btn btn-primary"><i class="fas fa-plus-circle me-2"></i>Agregar Nuevo Grado</a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if grados %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre del Grado</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for grado_item in grados %}
+                <tr>
+                    <td>{{ grado_item.id }}</td>
+                    <td>{{ grado_item.nombre }}</td>
+                    <td class="text-center">
+                        <a href="{{ url_for('admin_editar_grado', id_grado=grado_item.id) }}" class="btn btn-sm btn-warning me-1" title="Editar">
+                            <i class="fas fa-edit"></i> <span class="d-none d-md-inline">Editar</span>
+                        </a>
+                        <form action="{{ url_for('admin_eliminar_grado', id_grado=grado_item.id) }}" method="POST" style="display:inline-block;">
+                            <button type="submit" class="btn btn-sm btn-danger" title="Eliminar"
+                                    onclick="return confirm('¿Estás seguro de eliminar este grado? También se eliminarán los grupos asociados (si está configurado ON DELETE CASCADE).');">
+                                <i class="fas fa-trash-alt"></i> <span class="d-none d-md-inline">Eliminar</span>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info mt-3">
+        <p class="mb-0">No hay grados registrados. Puedes <a href="{{ url_for('admin_agregar_grado') }}">agregar uno nuevo</a>.</p>
+    </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{{ url_for('dashboard_admin') }}" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Volver al Panel</a>
+    </div>
 </div>
 {% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Gestionar Usuarios del Sistema{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Gestionar Usuarios del Sistema</h1>
+        <a href="{{ url_for('admin_agregar_usuario') }}" class="btn btn-success">Agregar Nuevo Usuario</a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <h2>Lista de Usuarios</h2>
+    {% if usuarios %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Tipo</th>
+                    <th>Matrícula/CURP</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in usuarios %}
+                <tr>
+                    <td>{{ usuario.id }}</td>
+                    <td>{{ usuario.nombre }}</td>
+                    <td>{{ usuario.email }}</td>
+                    <td>
+                        {% if usuario.tipo == 'administrador' %}
+                            <span class="badge bg-danger">{{ usuario.tipo|capitalize }}</span>
+                        {% elif usuario.tipo == 'maestro' %}
+                            <span class="badge bg-warning text-dark">{{ usuario.tipo|capitalize }}</span>
+                        {% elif usuario.tipo == 'alumno' %}
+                            <span class="badge bg-primary">{{ usuario.tipo|capitalize }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ usuario.tipo|capitalize }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if usuario.tipo == 'alumno' %}
+                            {{ usuario.matricula if usuario.matricula else usuario.curp if usuario.curp else '--'}}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('admin_editar_usuario', id_usuario=usuario.id) }}" class="btn btn-sm btn-outline-primary mb-1">Editar</a>
+                        <form action="{{ url_for('admin_eliminar_usuario', id_usuario=usuario.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger mb-1">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>No hay usuarios registrados en el sistema.</p>
+    {% endif %}
+    <p><a href="{{ url_for('dashboard_admin') }}" class="btn btn-secondary mt-3">Volver al Dashboard</a></p>
+</div>
+{% endblock %}

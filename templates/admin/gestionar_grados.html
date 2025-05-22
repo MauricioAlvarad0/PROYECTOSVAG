@@ -3,47 +3,47 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4">Gestionar Grados</h2>
-
-    <div class="mb-3">
-        {# CORRECCIÓN AQUÍ: 'admin_agregar_grado' en lugar de 'agregar_grado' #}
-        <a href="{{ url_for('admin_agregar_grado') }}" class="btn btn-primary"><i class="fas fa-plus-circle me-2"></i>Agregar Nuevo Grado</a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Gestionar Grados Académicos</h1>
+        {# CORRECCIÓN AQUÍ: Cambiado 'admin_agregar_grado' a 'admin_agregar_grado_page' #}
+        <a href="{{ url_for('admin_agregar_grado_page') }}" class="btn btn-success">
+            <i class="fas fa-plus-circle"></i> Agregar Nuevo Grado
+        </a>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
             {% endfor %}
         {% endif %}
     {% endwith %}
 
     {% if grados %}
     <div class="table-responsive">
-        <table class="table table-striped table-hover">
+        <table class="table table-striped table-hover table-bordered">
             <thead class="table-dark">
                 <tr>
                     <th>ID</th>
                     <th>Nombre del Grado</th>
-                    <th class="text-center">Acciones</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                {% for grado_item in grados %}
+                {% for grado in grados %}
                 <tr>
-                    <td>{{ grado_item.id }}</td>
-                    <td>{{ grado_item.nombre }}</td>
-                    <td class="text-center">
-                        <a href="{{ url_for('admin_editar_grado', id_grado=grado_item.id) }}" class="btn btn-sm btn-warning me-1" title="Editar">
-                            <i class="fas fa-edit"></i> <span class="d-none d-md-inline">Editar</span>
+                    <td>{{ grado.id }}</td>
+                    <td>{{ grado.nombre }}</td>
+                    <td>
+                        <a href="{{ url_for('admin_editar_grado_page', id_grado=grado.id) }}" class="btn btn-sm btn-outline-primary mb-1" title="Editar">
+                            <i class="fas fa-edit"></i> Editar
                         </a>
-                        <form action="{{ url_for('admin_eliminar_grado', id_grado=grado_item.id) }}" method="POST" style="display:inline-block;">
-                            <button type="submit" class="btn btn-sm btn-danger" title="Eliminar"
-                                    onclick="return confirm('¿Estás seguro de eliminar este grado? También se eliminarán los grupos asociados (si está configurado ON DELETE CASCADE).');">
-                                <i class="fas fa-trash-alt"></i> <span class="d-none d-md-inline">Eliminar</span>
+                        <form action="{{ url_for('admin_eliminar_grado_page', id_grado=grado.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar el grado \'{{ grado.nombre }}\'? Esta acción no se puede deshacer y podría afectar a grupos asociados.');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger mb-1" title="Eliminar">
+                                <i class="fas fa-trash-alt"></i> Eliminar
                             </button>
                         </form>
                     </td>
@@ -53,13 +53,10 @@
         </table>
     </div>
     {% else %}
-    <div class="alert alert-info mt-3">
-        <p class="mb-0">No hay grados registrados. Puedes <a href="{{ url_for('admin_agregar_grado') }}">agregar uno nuevo</a>.</p>
-    </div>
+    <p>No hay grados registrados.</p>
     {% endif %}
-
-    <div class="mt-4">
-        <a href="{{ url_for('dashboard_admin') }}" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Volver al Panel</a>
-    </div>
+    <p><a href="{{ url_for('dashboard_admin') }}" class="btn btn-secondary mt-3">
+        <i class="fas fa-arrow-left"></i> Volver al Dashboard Principal
+    </a></p>
 </div>
 {% endblock %}

@@ -1,58 +1,102 @@
 {% extends "base.html" %}
-{% block title %}Registrar Asistencia - {{ asignacion.nombre_materia }}{% endblock %}
-{% block content %}
-<h2>Registrar Asistencia</h2>
-<h3>{{ asignacion.nombre_grado }} - Grupo {{ asignacion.nombre_grupo }}</h3>
-<h4>Materia: {{ asignacion.nombre_materia }}</h4>
+{% block title %}Registrar Asistencia - {{ clase_info.materia_nombre if clase_info else 'Clase' }}{% endblock %}
 
-<form method="POST">
-    <div>
-        <label for="fecha_asistencia">Fecha de Asistencia:</label>
-        <input type="date" id="fecha_asistencia" name="fecha_asistencia" value="{{ request.form.fecha_asistencia if request.form.fecha_asistencia else fecha_hoy }}" required>
-         <small>(Al cambiar la fecha y enviar, se cargarán las asistencias de ese día si existen, o se registrarán nuevas.)</small>
-    </div>
-    <br>
-    {% if alumnos %}
-    <table>
-        <thead>
-            <tr>
-                <th>Matrícula</th>
-                <th>Nombre Alumno</th>
-                <th>Estado</th>
-                <th>Observaciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for alumno in alumnos %}
-            <tr>
-                <td>{{ alumno.matricula }}</td>
-                <td>{{ alumno.nombre }}</td>
-                <td>
-                    <select name="asistencia_alumno_{{ alumno.id }}" required>
-                        <option value="">-- Seleccionar --</option>
-                        {% set estado_actual = asistencias_registradas.get(alumno.id, {}).get('estado') %}
-                        <option value="Presente" {% if estado_actual == 'Presente' %}selected{% endif %}>Presente</option>
-                        <option value="Ausente" {% if estado_actual == 'Ausente' %}selected{% endif %}>Ausente</option>
-                        <option value="Retardo" {% if estado_actual == 'Retardo' %}selected{% endif %}>Retardo</option>
-                        <option value="Justificado" {% if estado_actual == 'Justificado' %}selected{% endif %}>Justificado</option>
-                    </select>
-                </td>
-                <td>
-                    <input type="text" name="observaciones_alumno_{{ alumno.id }}"
-                           value="{{ asistencias_registradas.get(alumno.id, {}).get('observaciones', '') }}"
-                           placeholder="Opcional">
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <br>
-    <input type="submit" value="Guardar Asistencias del Día" class="btn">
+{% block content %}
+<div class="container mt-4">
+    {% if clase_info %}
+        <h2>Registrar Asistencia para: {{ clase_info.materia_nombre }}</h2>
+        <p>
+            <strong>Grado:</strong> {{ clase_info.grado_nombre }} | 
+            <strong>Grupo:</strong> {{ clase_info.grupo_nombre }} | 
+            <strong>Horario:</strong> {{ clase_info.horario }} |
+            <strong>Ciclo:</strong> {{ clase_info.ciclo_escolar }}
+        </p>
     {% else %}
-    <p>No hay alumnos inscritos en este grupo actualmente.</p>
+        <h2>Registrar Asistencia</h2>
     {% endif %}
-</form>
-<div class="return-link-container" style="margin-top: 30px;">
-    <a href="{{ url_for('maestro_mis_clases') }}">Volver a Mis Clases</a>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="GET" action="{{ url_for('registrar_asistencia_maestro', clase_id=clase_id) }}" class="mb-3">
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label for="fecha_seleccionada" class="col-form-label">Seleccionar Fecha:</label>
+            </div>
+            <div class="col-auto">
+                <input type="date" id="fecha_seleccionada" name="fecha_seleccionada" class="form-control" 
+                       value="{{ fecha_seleccionada if fecha_seleccionada else today_date_str }}" required>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-info btn-sm">Cargar Asistencias</button>
+            </div>
+        </div>
+    </form>
+
+    {% if alumnos %}
+    <form method="POST" action="{{ url_for('registrar_asistencia_maestro', clase_id=clase_id) }}">
+        <input type="hidden" name="fecha" value="{{ fecha_seleccionada }}">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Alumno</th>
+                        <th>Email/Matrícula</th>
+                        <th>Estatus Actual</th>
+                        <th>Marcar Asistencia</th>
+                        <th>Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alumno in alumnos %}
+                    <tr>
+                        <td>{{ alumno.nombre }}</td>
+                        <td><small>{{ alumno.email if alumno.email else alumno.matricula }}</small></td>
+                        <td>
+                            {% set asistencia_actual = asistencias_registradas.get(alumno.id) %}
+                            {% set estatus_display = asistencia_actual.estatus if asistencia_actual else 'No Registrado' %}
+                            <span class="badge 
+                                {% if estatus_display == 'Presente' %}bg-success
+                                {% elif estatus_display == 'Ausente' %}bg-danger
+                                {% elif estatus_display == 'Justificado' %}bg-info text-dark
+                                {% elif estatus_display == 'Tardanza' %}bg-warning text-dark
+                                {% else %}bg-secondary
+                                {% endif %}">
+                                {{ estatus_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <select name="asistencia_{{ alumno.id }}" class="form-select form-select-sm">
+                                <option value="" {% if not asistencia_actual %}selected{% endif %}>-- Seleccionar --</option>
+                                <option value="Presente" {% if asistencia_actual and asistencia_actual.estatus == 'Presente' %}selected{% endif %}>Presente</option>
+                                <option value="Ausente" {% if asistencia_actual and asistencia_actual.estatus == 'Ausente' %}selected{% endif %}>Ausente</option>
+                                <option value="Tardanza" {% if asistencia_actual and asistencia_actual.estatus == 'Tardanza' %}selected{% endif %}>Tardanza</option>
+                                <option value="Justificado" {% if asistencia_actual and asistencia_actual.estatus == 'Justificado' %}selected{% endif %}>Justificado</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" name="observaciones_{{ alumno.id }}" class="form-control form-control-sm" 
+                                   value="{{ asistencia_actual.observaciones if asistencia_actual and asistencia_actual.observaciones else '' }}" 
+                                   placeholder="Opcional">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Guardar Asistencias</button>
+    </form>
+    {% else %}
+    <p>No hay alumnos inscritos en esta clase o no se pudieron cargar para la fecha seleccionada.</p>
+    {% endif %}
+    <p><a href="{{ url_for('dashboard_maestro') }}" class="btn btn-secondary mt-3">Volver al Dashboard</a></p>
 </div>
 {% endblock %}

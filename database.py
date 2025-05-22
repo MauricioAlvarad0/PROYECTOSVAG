@@ -1,442 +1,507 @@
 import sqlite3
-from werkzeug.security import generate_password_hash
-import random # Para generar datos de prueba más variados
+from datetime import date, datetime 
 import os
+from werkzeug.security import generate_password_hash
 
-# --- Definir la ruta absoluta a la base de datos ---
-# Obtiene el directorio donde reside este archivo (database.py)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Define el nombre de la base de datos para que esté en el mismo directorio que database.py
-DATABASE_NAME = os.path.join(BASE_DIR, 'svag_escolar.db')
-# Ahora DATABASE_NAME será algo como /home/mauricio/PROYECTO/PROYECTOSVAG/svag_escolar.db
-# --- Fin de la definición de ruta absoluta ---
+DATABASE_NAME = os.path.join(BASE_DIR, 'prodDomLot.db')
 
-# Listas para generar nombres y apellidos aleatorios
-NOMBRES_MASCULINOS = [
-    "José", "Luis", "Juan", "Carlos", "Miguel", "Ángel", "Jesús", "Antonio", "Francisco", "Pedro",
-    "Alejandro", "Manuel", "Ricardo", "Fernando", "Jorge", "Alberto", "Raúl", "David", "Andrés", "Santiago",
-    "Emiliano", "Sebastián", "Mateo", "Nicolás", "Daniel", "Samuel", "Diego", "Leonardo", "Gabriel", "Adrián"
-]
-NOMBRES_FEMENINOS = [
-    "María", "Guadalupe", "Sofía", "Ana", "Laura", "Valentina", "Isabella", "Camila", "Valeria", "Mariana",
-    "Gabriela", "Daniela", "Paula", "Renata", "Ximena", "Victoria", "Fernanda", "Juana", "Verónica", "Patricia",
-    "Elena", "Marta", "Lucía", "Carmen", "Rosa", "Teresa", "Pilar", "Antonia", "Isabel", "Alejandra"
-]
-APELLIDOS = [
-    "Hernández", "García", "Martínez", "López", "González", "Pérez", "Rodríguez", "Sánchez", "Ramírez", "Cruz",
-    "Flores", "Gómez", "Morales", "Vázquez", "Jiménez", "Reyes", "Díaz", "Torres", "Ruiz", "Mendoza",
-    "Aguilar", "Ortiz", "Moreno", "Castillo", "Romero", "Álvarez", "Chávez", "Rivera", "Juárez", "Domínguez"
-]
-
-def generar_nombre_completo(genero):
-    if genero == "masculino":
-        nombre1 = random.choice(NOMBRES_MASCULINOS)
-        if random.random() < 0.4: # 40% de probabilidad de tener un segundo nombre
-            nombre2 = random.choice(NOMBRES_MASCULINOS)
-            while nombre2 == nombre1: # Evitar el mismo nombre dos veces
-                nombre2 = random.choice(NOMBRES_MASCULINOS)
-            nombre_completo = f"{nombre1} {nombre2}"
-        else:
-            nombre_completo = nombre1
-    else: # femenino
-        nombre1 = random.choice(NOMBRES_FEMENINOS)
-        if random.random() < 0.4:
-            nombre2 = random.choice(NOMBRES_FEMENINOS)
-            while nombre2 == nombre1:
-                nombre2 = random.choice(NOMBRES_FEMENINOS)
-            nombre_completo = f"{nombre1} {nombre2}"
-        else:
-            nombre_completo = nombre1
-
-    apellido1 = random.choice(APELLIDOS)
-    apellido2 = random.choice(APELLIDOS)
-    while apellido2 == apellido1 and len(APELLIDOS) > 1 : # Evitar el mismo apellido dos veces si es posible
-        apellido2 = random.choice(APELLIDOS)
-    return f"{nombre_completo} {apellido1} {apellido2}"
-
-def get_db():
+def get_db_connection():
     conn = sqlite3.connect(DATABASE_NAME)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
-def crear_db():
-    if os.path.exists(DATABASE_NAME):
-        os.remove(DATABASE_NAME)
-        print(f"Base de datos '{DATABASE_NAME}' anterior eliminada para recreación.")
-
-    conn = get_db()
+def create_tables_and_initialize():
+    conn = get_db_connection()
     cursor = conn.cursor()
 
-    # --- TABLAS CATALOGO ---
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            email TEXT UNIQUE, -- Email puede ser NULL si el login es solo por matrícula para algunos
+            password TEXT NOT NULL,
+            tipo TEXT NOT NULL CHECK(tipo IN ('administrador', 'maestro', 'alumno')),
+            apellido_paterno TEXT,
+            apellido_materno TEXT,
+            fecha_nacimiento TEXT,
+            curp TEXT UNIQUE,
+            direccion TEXT,
+            telefono TEXT,
+            matricula TEXT UNIQUE, 
+            usuario_login TEXT UNIQUE 
+        )
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Materias (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL UNIQUE,
+            clave_materia TEXT UNIQUE,
+            descripcion TEXT
+        )
+    ''')
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Grados (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nombre TEXT NOT NULL UNIQUE
         )
     ''')
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Grupos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            grado_id INTEGER NOT NULL,
             nombre TEXT NOT NULL,
-            FOREIGN KEY (grado_id) REFERENCES Grados (id) ON DELETE CASCADE,
-            UNIQUE (grado_id, nombre)
+            grado_id INTEGER NOT NULL,
+            UNIQUE(nombre, grado_id),
+            FOREIGN KEY(grado_id) REFERENCES Grados(id) ON DELETE CASCADE
         )
     ''')
+    
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Materias (
+        CREATE TABLE IF NOT EXISTS Clases (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nombre TEXT NOT NULL UNIQUE,
-            clave_materia TEXT UNIQUE
+            materia_id INTEGER NOT NULL,
+            maestro_id INTEGER NOT NULL, 
+            grupo_id INTEGER NOT NULL,
+            grado_id INTEGER NOT NULL, 
+            horario TEXT, 
+            ciclo_escolar TEXT,
+            FOREIGN KEY(materia_id) REFERENCES Materias(id) ON DELETE CASCADE,
+            FOREIGN KEY(maestro_id) REFERENCES Usuarios(id) ON DELETE CASCADE, 
+            FOREIGN KEY(grupo_id) REFERENCES Grupos(id) ON DELETE CASCADE,
+            FOREIGN KEY(grado_id) REFERENCES Grados(id) ON DELETE CASCADE
         )
     ''')
 
-    # --- TABLAS DE USUARIOS ---
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Maestros (
+        CREATE TABLE IF NOT EXISTS Clases_Alumnos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nombre TEXT,
-            usuario TEXT NOT NULL UNIQUE,
+            clase_id INTEGER NOT NULL,
+            alumno_id INTEGER NOT NULL, 
+            UNIQUE(clase_id, alumno_id), 
+            FOREIGN KEY(clase_id) REFERENCES Clases(id) ON DELETE CASCADE,
+            FOREIGN KEY(alumno_id) REFERENCES Usuarios(id) ON DELETE CASCADE
+        )
+    ''')
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Asistencias (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            clase_id INTEGER NOT NULL,
+            alumno_id INTEGER NOT NULL, 
+            fecha TEXT NOT NULL, 
+            estatus TEXT NOT NULL, 
+            observaciones TEXT, 
+            hora TEXT, 
+            FOREIGN KEY(clase_id) REFERENCES Clases(id) ON DELETE CASCADE,
+            FOREIGN KEY(alumno_id) REFERENCES Usuarios(id) ON DELETE CASCADE,
+            UNIQUE(clase_id, alumno_id, fecha) 
+        )
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Justificantes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            alumno_id INTEGER NOT NULL, 
+            fecha_solicitud TEXT NOT NULL, 
+            fecha_inasistencia_inicio TEXT NOT NULL,
+            fecha_inasistencia_fin TEXT NOT NULL,
+            clase_id INTEGER, 
+            motivo TEXT NOT NULL,
+            archivo_path TEXT, 
+            estado TEXT DEFAULT 'Pendiente' CHECK(estado IN ('Pendiente', 'Aprobado', 'Rechazado')),
+            FOREIGN KEY(alumno_id) REFERENCES Usuarios(id) ON DELETE CASCADE,
+            FOREIGN KEY(clase_id) REFERENCES Clases(id) ON DELETE SET NULL
+        )
+    ''')
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Maestros ( 
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            usuario TEXT UNIQUE NOT NULL, 
             password TEXT NOT NULL,
-            rol TEXT NOT NULL DEFAULT 'maestro' CHECK(rol IN ('maestro', 'admin'))
+            rol TEXT CHECK(rol IN ('admin', 'maestro')) DEFAULT 'maestro'
         )
     ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Alumnos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nombre TEXT,
-            matricula TEXT NOT NULL UNIQUE,
+            nombre TEXT NOT NULL,
+            apellido_paterno TEXT,
+            apellido_materno TEXT,
+            fecha_nacimiento DATE,
+            curp TEXT UNIQUE,
+            direccion TEXT,
+            telefono TEXT,
+            grupo_id INTEGER, 
+            matricula TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
-            grupo_id INTEGER,
-            rol TEXT NOT NULL DEFAULT 'alumno' CHECK(rol = 'alumno'),
-            FOREIGN KEY (grupo_id) REFERENCES Grupos (id) ON DELETE SET NULL
+            FOREIGN KEY (grupo_id) REFERENCES Grupos(id) ON DELETE SET NULL
         )
     ''')
-
-    # --- TABLA DE UNION / ASIGNACIONES ---
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Maestros_Materias_Grupos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            maestro_id INTEGER NOT NULL,
-            materia_id INTEGER NOT NULL,
-            grupo_id INTEGER NOT NULL,
+            maestro_id INTEGER, 
+            materia_id INTEGER,
+            grupo_id INTEGER,
             ciclo_escolar TEXT,
-            FOREIGN KEY (maestro_id) REFERENCES Maestros (id) ON DELETE CASCADE,
-            FOREIGN KEY (materia_id) REFERENCES Materias (id) ON DELETE CASCADE,
-            FOREIGN KEY (grupo_id) REFERENCES Grupos (id) ON DELETE CASCADE,
-            UNIQUE (maestro_id, materia_id, grupo_id, ciclo_escolar)
+            FOREIGN KEY(maestro_id) REFERENCES Maestros(id) ON DELETE CASCADE,
+            FOREIGN KEY(materia_id) REFERENCES Materias(id) ON DELETE CASCADE,
+            FOREIGN KEY(grupo_id) REFERENCES Grupos(id) ON DELETE CASCADE, 
+            UNIQUE(maestro_id, materia_id, grupo_id, ciclo_escolar)
         )
     ''')
-
-    # --- TABLAS DE REGISTROS ---
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Asistencias (
+        CREATE TABLE IF NOT EXISTS Asistencias_Original ( 
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            alumno_id INTEGER NOT NULL,
-            asignacion_id INTEGER NOT NULL,
-            fecha TEXT NOT NULL,
-            hora TEXT,
-            estado TEXT NOT NULL CHECK(estado IN ('Presente', 'Ausente', 'Retardo', 'Justificado')),
+            alumno_id INTEGER, 
+            asignacion_id INTEGER, 
+            fecha DATE,
+            estado TEXT,
             observaciones TEXT,
-            FOREIGN KEY (alumno_id) REFERENCES Alumnos (id) ON DELETE CASCADE,
-            FOREIGN KEY (asignacion_id) REFERENCES Maestros_Materias_Grupos (id) ON DELETE CASCADE
+            hora TIME,
+            FOREIGN KEY (alumno_id) REFERENCES Alumnos(id) ON DELETE CASCADE,
+            FOREIGN KEY (asignacion_id) REFERENCES Maestros_Materias_Grupos(id) ON DELETE CASCADE,
+            UNIQUE (alumno_id, asignacion_id, fecha)
         )
     ''')
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Justificantes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            alumno_id INTEGER NOT NULL,
-            fecha_solicitud TEXT NOT NULL,
-            fecha_inasistencia_inicio TEXT NOT NULL,
-            fecha_inasistencia_fin TEXT NOT NULL,
-            asignacion_id INTEGER,
-            motivo TEXT NOT NULL,
-            archivo_path TEXT,
-            estado TEXT DEFAULT 'Pendiente' CHECK(estado IN ('Pendiente', 'Aprobado', 'Rechazado')),
-            maestro_revisor_id INTEGER,
-            fecha_revision TEXT,
-            comentarios_revision TEXT,
-            FOREIGN KEY (alumno_id) REFERENCES Alumnos (id) ON DELETE CASCADE,
-            FOREIGN KEY (asignacion_id) REFERENCES Maestros_Materias_Grupos (id) ON DELETE SET NULL,
-            FOREIGN KEY (maestro_revisor_id) REFERENCES Maestros (id) ON DELETE SET NULL
-        )
-    ''')
+
     conn.commit()
-    print("Tablas creadas exitosamente.")
+    conn.close()
 
-    print("Iniciando inserción de datos de prueba...")
+def add_user(nombre, email, password_hash, tipo, apellido_paterno=None, apellido_materno=None, fecha_nacimiento=None, curp=None, direccion=None, telefono=None, matricula=None, usuario_login=None):
+    conn = get_db_connection()
     try:
-        # Grados
-        grados_data = ["1er Semestre", "2do Semestre", "3er Semestre", "4to Semestre"]
-        grado_ids = {}
-        for nombre_grado in grados_data:
-            cursor.execute("INSERT OR IGNORE INTO Grados (nombre) VALUES (?)", (nombre_grado,))
-            conn.commit()
-            cursor.execute("SELECT id FROM Grados WHERE nombre = ?", (nombre_grado,))
-            grado_row = cursor.fetchone()
-            if grado_row:
-                grado_ids[nombre_grado] = grado_row['id']
-        print(f"Grados insertados: {grado_ids}")
-
-        # Grupos
-        print("Insertando Grupos...")
-        grupos_por_grado_letras = ["A", "B"]
-        grupo_ids_general = []
-        for nombre_grado_str, grado_id_val in grado_ids.items():
-            for letra_grupo in grupos_por_grado_letras:
-                try:
-                    cursor.execute("INSERT OR IGNORE INTO Grupos (grado_id, nombre) VALUES (?, ?)", (grado_id_val, letra_grupo))
-                    conn.commit()
-                    cursor.execute("SELECT id FROM Grupos WHERE grado_id = ? AND nombre = ?", (grado_id_val, letra_grupo))
-                    grupo_row = cursor.fetchone()
-                    if grupo_row:
-                        current_grupo_id = grupo_row['id']
-                        grupo_ids_general.append(current_grupo_id)
-                        # print(f"Grupo procesado/insertado: Grado '{nombre_grado_str}' (ID: {grado_id_val}) - Grupo '{letra_grupo}', Grupo ID: {current_grupo_id}")
-                    else:
-                        print(f"ERROR: No se pudo obtener el ID para el grupo {letra_grupo} del grado {nombre_grado_str}")
-                except sqlite3.Error as e_grupo:
-                    print(f"Error al insertar grupo {letra_grupo} para grado ID {grado_id_val}: {e_grupo}")
-        if not grupo_ids_general:
-            print("ADVERTENCIA CRÍTICA: No se crearon grupos.")
-        else:
-            print(f"Grupos procesados. Total de IDs de grupo para alumnos: {len(grupo_ids_general)}. IDs: {grupo_ids_general}")
-        if not grupo_ids_general:
-            print("ADVERTENCIA: No se crearon grupos, la inserción de datos posteriores podría fallar.")
-            # No retornamos aquí para que el resto de la inserción pueda intentarse o fallar explícitamente.
-
-        # Materias
-        materias_data = [
-            ("Matemáticas Discretas", "MD101"), ("Cálculo Diferencial", "CD102"),
-            ("Programación Estructurada", "PE103"), ("Fundamentos de Redes", "FR104"),
-            ("Álgebra Lineal", "AL201"), ("Cálculo Integral", "CI202"),
-            ("Programación Orientada a Objetos", "POO203"), ("Sistemas Operativos", "SO204"),
-            ("Probabilidad y Estadística", "PYE301"),("Bases de Datos", "BD302"),
-            ("Ingeniería de Software", "IS303"), ("Arquitectura de Computadoras", "AC304")
-        ]
-        materia_ids = {}
-        for nombre_materia, clave_materia in materias_data:
-            cursor.execute("INSERT OR IGNORE INTO Materias (nombre, clave_materia) VALUES (?, ?)", (nombre_materia, clave_materia))
-            conn.commit()
-            cursor.execute("SELECT id FROM Materias WHERE clave_materia = ?", (clave_materia,))
-            materia_row = cursor.fetchone()
-            if materia_row:
-                 materia_ids[clave_materia] = materia_row['id']
-        print(f"Materias insertadas: {len(materia_ids)} materias. Claves: {list(materia_ids.keys())}")
-
-        # Maestros
-        admin_pass_hash = generate_password_hash('adminpass')
-        cursor.execute("INSERT OR IGNORE INTO Maestros (nombre, usuario, password, rol) VALUES (?, ?, ?, ?)",
-                       ('Admin Principal', 'admin', admin_pass_hash, 'admin'))
+        conn.execute('''INSERT INTO Usuarios 
+                        (nombre, email, password, tipo, apellido_paterno, apellido_materno, fecha_nacimiento, curp, direccion, telefono, matricula, usuario_login) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                     (nombre, email, password_hash, tipo, apellido_paterno, apellido_materno, fecha_nacimiento, curp, direccion, telefono, matricula, usuario_login))
         conn.commit()
-        cursor.execute("SELECT id FROM Maestros WHERE usuario = 'admin'")
-        admin_row = cursor.fetchone()
-        id_admin = admin_row['id'] if admin_row else None
-
-        maestros_data = [
-            ("Dr. Alan Turing", "aturing", generate_password_hash("maestro1")),
-            ("Dra. Grace Hopper", "ghopper", generate_password_hash("maestro2")),
-            ("Ing. Tim Berners-Lee", "tlee", generate_password_hash("maestro3")),
-            ("M.C. Ada Lovelace", "alovelace", generate_password_hash("maestro4"))
-        ]
-        maestro_ids = {}
-        if id_admin: maestro_ids['admin'] = id_admin
-        for nombre_maestro, user_maestro, pass_maestro in maestros_data:
-            cursor.execute("INSERT OR IGNORE INTO Maestros (nombre, usuario, password, rol) VALUES (?, ?, ?, ?)",
-                           (nombre_maestro, user_maestro, pass_maestro, 'maestro'))
-            conn.commit()
-            cursor.execute("SELECT id FROM Maestros WHERE usuario = ?", (user_maestro,))
-            maestro_row = cursor.fetchone()
-            if maestro_row:
-                maestro_ids[user_maestro] = maestro_row['id']
-        print(f"Maestros insertados: {len(maestro_ids)} maestros. Usuarios: {list(maestro_ids.keys())}")
-        if not maestro_ids or (len(maestros_data) > 0 and len([k for k in maestro_ids if k != 'admin']) == 0) :
-            print("ADVERTENCIA: No se crearon maestros de prueba (además del admin) o sus IDs no se recuperaron.")
-
-        # Alumnos
-        print(f"Intentando generar alumnos para {len(grupo_ids_general)} grupos...")
-        alumnos_por_grupo_target = 30
-        matricula_counter = 2025000
-        alumno_password_hash = generate_password_hash("alumno123")
-        alumno_ids_por_grupo = {gid: [] for gid in grupo_ids_general} # Asegura que todas las claves de grupo existen
-
-        if grupo_ids_general:
-            for grupo_id_val in grupo_ids_general:
-                # print(f"Generando alumnos para Grupo ID: {grupo_id_val}") # Menos verboso
-                alumnos_insertados_en_grupo = 0
-                for i in range(alumnos_por_grupo_target):
-                    genero = random.choice(["masculino", "femenino"])
-                    nombre_alumno = generar_nombre_completo(genero)
-                    matricula_alumno = f"A{matricula_counter}"
-                    matricula_counter += 1
-                    try:
-                        cursor.execute("INSERT INTO Alumnos (nombre, matricula, password, grupo_id, rol) VALUES (?, ?, ?, ?, ?)",
-                                       (nombre_alumno, matricula_alumno, alumno_password_hash, grupo_id_val, 'alumno'))
-                        conn.commit()
-                        last_id = cursor.lastrowid
-                        if last_id:
-                             # La clave grupo_id_val debe existir por la inicialización de alumno_ids_por_grupo
-                            alumno_ids_por_grupo[grupo_id_val].append(last_id)
-                            alumnos_insertados_en_grupo += 1
-                    except sqlite3.IntegrityError:
-                        # print(f"Error de integridad al insertar alumno con matrícula {matricula_alumno}, reintentando.") # Menos verboso
-                        matricula_counter += random.randint(1,5)
-                        matricula_alumno_new = f"A{matricula_counter}"
-                        matricula_counter +=1
-                        cursor.execute("INSERT OR IGNORE INTO Alumnos (nombre, matricula, password, grupo_id, rol) VALUES (?, ?, ?, ?, ?)",
-                                       (nombre_alumno, matricula_alumno_new, alumno_password_hash, grupo_id_val, 'alumno'))
-                        conn.commit()
-                        last_id_retry = cursor.lastrowid
-                        if last_id_retry:
-                            alumno_ids_por_grupo[grupo_id_val].append(last_id_retry)
-                            alumnos_insertados_en_grupo +=1
-                print(f"Grupo ID {grupo_id_val}: {alumnos_insertados_en_grupo} alumnos insertados.")
-        else:
-            print("ADVERTENCIA: No hay grupos para generar alumnos.")
-
-
-        # Asignaciones Maestros-Materias-Grupos
-        print("DEBUG: Iniciando creación de Asignaciones Maestros-Materias-Grupos...")
-        asignaciones_insertadas = 0
-        # Excluir 'admin' de la lista de maestros disponibles para enseñar, a menos que quieras que también enseñe.
-        list_maestro_keys_para_ensenar = [k for k in maestro_ids.keys() if k != 'admin' and maestro_ids[k] is not None]
-        list_materia_keys = list(materia_ids.keys())
-        
-        print(f"DEBUG: Maestros disponibles para enseñar (claves): {list_maestro_keys_para_ensenar}")
-        print(f"DEBUG: Materias disponibles (claves): {list_materia_keys}")
-        print(f"DEBUG: Grupos disponibles (IDs): {grupo_ids_general}")
-
-        if list_maestro_keys_para_ensenar and list_materia_keys and grupo_ids_general:
-            for grupo_id_val in grupo_ids_general:
-                materias_asignadas_a_grupo = random.sample(list_materia_keys, min(len(list_materia_keys), random.randint(2,4)))
-                maestros_disponibles_para_grupo = list_maestro_keys_para_ensenar[:] 
-
-                for clave_materia in materias_asignadas_a_grupo:
-                    if not maestros_disponibles_para_grupo:
-                        print(f"DEBUG: No más maestros disponibles para asignar a materia '{clave_materia}' en grupo {grupo_id_val}")
-                        break 
-                    
-                    print(f"DEBUG: Intentando asignar materia con clave '{clave_materia}' en grupo {grupo_id_val}.")
-                    if clave_materia not in materia_ids:
-                        print(f"DEBUG ERROR: clave_materia '{clave_materia}' no encontrada en materia_ids. Saltando.")
-                        continue
-                    id_materia_actual = materia_ids[clave_materia]
-                    
-                    maestro_usuario_actual = random.choice(maestros_disponibles_para_grupo)
-                    print(f"DEBUG: Maestro seleccionado (usuario): '{maestro_usuario_actual}'.")
-                    if maestro_usuario_actual not in maestro_ids:
-                        print(f"DEBUG ERROR: maestro_usuario_actual '{maestro_usuario_actual}' no encontrado en maestro_ids. Saltando.")
-                        continue
-                    id_maestro_actual = maestro_ids[maestro_usuario_actual]
-                    
-                    # Opcional: remover para que no de todas las materias el mismo maestro al mismo grupo
-                    # try:
-                    #     maestros_disponibles_para_grupo.remove(maestro_usuario_actual)
-                    # except ValueError:
-                    #     pass # Ya fue removido, no importa
-
-                    ciclo = "2025-A"
-                    try:
-                        print(f"DEBUG: Insertando asignación MMG: MaestroID={id_maestro_actual}, MateriaID={id_materia_actual}, GrupoID={grupo_id_val}, Ciclo={ciclo}")
-                        cursor.execute("""
-                            INSERT OR IGNORE INTO Maestros_Materias_Grupos
-                            (maestro_id, materia_id, grupo_id, ciclo_escolar)
-                            VALUES (?, ?, ?, ?)
-                        """, (id_maestro_actual, id_materia_actual, grupo_id_val, ciclo))
-                        conn.commit()
-                        if cursor.lastrowid:
-                            asignaciones_insertadas += 1
-                    except sqlite3.Error as e_asig:
-                        print(f"Error al insertar asignación: MaestroID={id_maestro_actual}, MateriaID={id_materia_actual}, GrupoID={grupo_id_val}. Error: {e_asig}")
-            print(f"Asignaciones Maestros-Materias-Grupos insertadas: {asignaciones_insertadas}")
-        else:
-            print("ADVERTENCIA: No se pudieron crear asignaciones por falta de maestros (no admin), materias o grupos.")
-
-
-        # Asistencias (algunas de ejemplo)
-        print("DEBUG: Iniciando creación de Asistencias...")
-        cursor.execute("SELECT id FROM Maestros_Materias_Grupos")
-        todas_las_asignaciones = cursor.fetchall()
-        asistencias_insertadas = 0
-
-        print(f"DEBUG: Total de asignaciones MMG encontradas para asistencias: {len(todas_las_asignaciones)}")
-        # print(f"DEBUG: Contenido de alumno_ids_por_grupo para Asistencias: {alumno_ids_por_grupo}")
-
-
-        if todas_las_asignaciones and any(len(alumnos) > 0 for alumnos in alumno_ids_por_grupo.values()):
-            fechas_ejemplo = ["2025-05-01", "2025-05-02", "2025-05-03", "2025-05-06", "2025-05-07"]
-            estados_asistencia = ['Presente', 'Ausente', 'Retardo']
-            
-            num_asignaciones_para_asistencia = min(len(todas_las_asignaciones), 5)
-            if num_asignaciones_para_asistencia == 0 and len(todas_las_asignaciones) > 0: # Asegurar que se procese al menos una si hay
-                 num_asignaciones_para_asistencia = 1
-            
-            print(f"DEBUG: Se tomarán {num_asignaciones_para_asistencia} asignaciones al azar para generar asistencias.")
-
-            for asignacion_row in random.sample(todas_las_asignaciones, num_asignaciones_para_asistencia):
-                asignacion_id = asignacion_row['id']
-                print(f"DEBUG Asistencias: Procesando asignacion_id: {asignacion_id}")
-                
-                cursor.execute("SELECT grupo_id FROM Maestros_Materias_Grupos WHERE id = ?", (asignacion_id,))
-                grupo_de_asignacion_row = cursor.fetchone()
-                
-                if not grupo_de_asignacion_row:
-                    print(f"DEBUG Asistencias: No se encontró grupo_id para asignacion_id: {asignacion_id}. Saltando.")
-                    continue
-                
-                grupo_id_de_asignacion = grupo_de_asignacion_row['grupo_id'] # Correcto
-                print(f"DEBUG Asistencias: asignacion_id: {asignacion_id}, grupo_id_de_asignacion recuperado: {grupo_id_de_asignacion}")
-
-                if grupo_id_de_asignacion in alumno_ids_por_grupo:
-                    if alumno_ids_por_grupo[grupo_id_de_asignacion]:
-                        alumnos_del_grupo = alumno_ids_por_grupo[grupo_id_de_asignacion]
-                        print(f"DEBUG Asistencias: Grupo {grupo_id_de_asignacion} tiene {len(alumnos_del_grupo)} alumnos. Tomando muestra.")
-                        
-                        num_alumnos_para_asistencia = min(len(alumnos_del_grupo), 10)
-                        if num_alumnos_para_asistencia == 0 and len(alumnos_del_grupo) > 0 :
-                             num_alumnos_para_asistencia = 1
-                        
-                        if not alumnos_del_grupo: # Chequeo extra
-                            print(f"DEBUG Asistencias: Lista de alumnos para grupo {grupo_id_de_asignacion} está vacía después de todo. Saltando.")
-                            continue
-
-                        for alumno_id_val in random.sample(alumnos_del_grupo, num_alumnos_para_asistencia):
-                            for fecha in fechas_ejemplo:
-                                estado = random.choice(estados_asistencia)
-                                hora = f"{random.randint(7,18):02d}:{random.randint(0,59):02d}"
-                                cursor.execute("""
-                                    INSERT OR IGNORE INTO Asistencias (alumno_id, asignacion_id, fecha, hora, estado)
-                                    VALUES (?, ?, ?, ?, ?)
-                                """, (alumno_id_val, asignacion_id, fecha, hora, estado))
-                                conn.commit()
-                                if cursor.lastrowid: asistencias_insertadas +=1
-                    else:
-                        print(f"DEBUG Asistencias: Grupo {grupo_id_de_asignacion} no tiene alumnos listados en alumno_ids_por_grupo[{grupo_id_de_asignacion}].")
-                else:
-                    print(f"DEBUG Asistencias ERROR: grupo_id_de_asignacion {grupo_id_de_asignacion} (de asignacion_id {asignacion_id}) NO ESTÁ en alumno_ids_por_grupo. Claves disponibles: {list(alumno_ids_por_grupo.keys())}")
-            print(f"Asistencias de ejemplo insertadas: {asistencias_insertadas}")
-        else:
-            if not todas_las_asignaciones:
-                 print("ADVERTENCIA: No se pudieron crear asistencias por falta de ASIGNACIONES.")
-            if not any(len(alumnos) > 0 for alumnos in alumno_ids_por_grupo.values()):
-                 print("ADVERTENCIA: No se pudieron crear asistencias por falta de ALUMNOS en los grupos.")
-
-    except sqlite3.Error as e:
-        print(f"Error GENERAL de SQLite durante la inserción de datos de prueba: {e}")
-    except KeyError as ke:
-        print(f"Excepción KeyError durante la inserción de datos de prueba: {ke}. Esto usualmente indica un problema al acceder a un diccionario con una clave inexistente.")
-    except Exception as ex:
-        # Imprimir el traceback completo para excepciones inesperadas
-        import traceback
-        print(f"Excepción INESPERADA durante la inserción de datos de prueba: {ex}")
-        traceback.print_exc() # Esto dará más detalles de dónde ocurrió el error "No item with that key"
+        return True
+    except sqlite3.IntegrityError as e: 
+        print(f"Error de integridad al añadir usuario '{email if email else matricula}': {e}")
+        return False
     finally:
-        if conn: # Asegurarse de que la conexión se cierre
-            conn.close()
-        print(f"Proceso de creación/verificación de '{DATABASE_NAME}' completado (con o sin errores en datos de prueba).")
+        conn.close()
+
+def update_user(user_id, nombre, email, tipo, apellido_paterno=None, apellido_materno=None, fecha_nacimiento=None, curp=None, direccion=None, telefono=None, matricula=None, usuario_login=None, password_hash=None):
+    conn = get_db_connection()
+    try:
+        if password_hash:
+            conn.execute('''UPDATE Usuarios SET
+                            nombre=?, email=?, tipo=?, apellido_paterno=?, apellido_materno=?, fecha_nacimiento=?, 
+                            curp=?, direccion=?, telefono=?, matricula=?, usuario_login=?, password=?
+                            WHERE id=?''',
+                         (nombre, email, tipo, apellido_paterno, apellido_materno, fecha_nacimiento, 
+                          curp, direccion, telefono, matricula, usuario_login, password_hash, user_id))
+        else:
+            conn.execute('''UPDATE Usuarios SET
+                            nombre=?, email=?, tipo=?, apellido_paterno=?, apellido_materno=?, fecha_nacimiento=?, 
+                            curp=?, direccion=?, telefono=?, matricula=?, usuario_login=?
+                            WHERE id=?''',
+                         (nombre, email, tipo, apellido_paterno, apellido_materno, fecha_nacimiento, 
+                          curp, direccion, telefono, matricula, usuario_login, user_id))
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError as e:
+        print(f"Error de integridad al actualizar usuario ID {user_id}: {e}")
+        return False
+    except sqlite3.Error as e:
+        print(f"Error de BD al actualizar usuario ID {user_id}: {e}")
+        return False
+    finally:
+        conn.close()
+
+def delete_user(user_id):
+    conn = get_db_connection()
+    try:
+        user_to_delete = get_user_by_id(user_id)
+        if user_to_delete and user_to_delete['tipo'] == 'administrador':
+            admins_count_row = conn.execute("SELECT COUNT(*) as count FROM Usuarios WHERE tipo = 'administrador'").fetchone()
+            if admins_count_row and admins_count_row['count'] <= 1:
+                print("Intento de eliminar al único administrador. Operación denegada.")
+                return False 
+        conn.execute('DELETE FROM Usuarios WHERE id = ?', (user_id,))
+        conn.commit()
+        return True
+    except sqlite3.Error as e: 
+        print(f"Error de BD al eliminar usuario ID {user_id}: {e}")
+        return False
+    finally:
+        conn.close()
+
+def get_user_by_email(email): # Busca en tabla Usuarios
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM Usuarios WHERE email = ?', (email,)).fetchone()
+    conn.close()
+    return user
+
+def get_user_by_matricula(matricula): # Busca en tabla Usuarios
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM Usuarios WHERE matricula = ?', (matricula,)).fetchone()
+    conn.close()
+    return user
+
+def get_user_by_id(user_id): # Busca en tabla Usuarios
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM Usuarios WHERE id = ?', (user_id,)).fetchone()
+    conn.close()
+    return user
+
+def get_alumnos(): 
+    conn = get_db_connection()
+    alumnos = conn.execute("SELECT id, nombre, email, matricula, curp FROM Usuarios WHERE tipo = 'alumno' ORDER BY nombre").fetchall()
+    conn.close()
+    return alumnos
+
+def get_maestros(): 
+    conn = get_db_connection()
+    maestros = conn.execute("SELECT id, nombre, email FROM Usuarios WHERE tipo = 'maestro' OR tipo = 'administrador' ORDER BY nombre").fetchall()
+    conn.close()
+    return maestros
+
+def add_materia(nombre, clave_materia=None, descripcion=None):
+    conn = get_db_connection()
+    try:
+        conn.execute('INSERT INTO Materias (nombre, clave_materia, descripcion) VALUES (?, ?, ?)', 
+                     (nombre, clave_materia, descripcion))
+        conn.commit(); return True
+    except sqlite3.IntegrityError as e: print(f"Error de integridad al añadir materia: {e}"); return False
+    except sqlite3.Error as e: print(f"Error de BD al añadir materia: {e}"); return False
+    finally: conn.close()
+
+def get_materias():
+    conn = get_db_connection(); materias = conn.execute('SELECT * FROM Materias ORDER BY nombre').fetchall(); conn.close(); return materias
+
+def add_grado(nombre):
+    conn = get_db_connection()
+    try:
+        conn.execute('INSERT INTO Grados (nombre) VALUES (?)', (nombre,)); conn.commit(); return True
+    except sqlite3.IntegrityError as e: print(f"Error de integridad al añadir grado: {e}"); return False
+    except sqlite3.Error as e: print(f"Error de BD al añadir grado: {e}"); return False
+    finally: conn.close()
+
+def get_grados():
+    conn = get_db_connection(); grados = conn.execute('SELECT * FROM Grados ORDER BY nombre').fetchall(); conn.close(); return grados
+
+def add_grupo(nombre, grado_id):
+    conn = get_db_connection()
+    try:
+        conn.execute('INSERT INTO Grupos (nombre, grado_id) VALUES (?, ?)', (nombre, grado_id)); conn.commit(); return True
+    except sqlite3.IntegrityError as e: print(f"Error de integridad al añadir grupo: {e}"); return False
+    except sqlite3.Error as e: print(f"Error de BD al añadir grupo: {e}"); return False
+    finally: conn.close()
+
+def get_grupos(): 
+    conn = get_db_connection()
+    grupos = conn.execute('''
+        SELECT GRP.id, GRP.nombre as nombre_grupo, GR.nombre as nombre_grado, GRP.grado_id
+        FROM Grupos GRP JOIN Grados GR ON GRP.grado_id = GR.id
+        ORDER BY GR.nombre, GRP.nombre
+    ''').fetchall(); conn.close(); return grupos
+    
+def add_clase(materia_id, maestro_id, grupo_id, grado_id, horario, ciclo_escolar):
+    conn = get_db_connection()
+    try:
+        conn.execute('''INSERT INTO Clases (materia_id, maestro_id, grupo_id, grado_id, horario, ciclo_escolar) 
+                        VALUES (?, ?, ?, ?, ?, ?)''',
+                     (materia_id, maestro_id, grupo_id, grado_id, horario, ciclo_escolar)); conn.commit(); return True
+    except sqlite3.Error as e: print(f"Error al añadir clase: {e}"); return False
+    finally: conn.close()
+
+def delete_clase(clase_id):
+    conn = get_db_connection()
+    try:
+        conn.execute('DELETE FROM Clases WHERE id = ?', (clase_id,)); conn.commit(); return True
+    except sqlite3.Error as e: print(f"Error de BD al eliminar clase ID {clase_id}: {e}"); return False
+    finally: conn.close()
+
+def get_clases(): 
+    conn = get_db_connection()
+    clases = conn.execute('''
+        SELECT C.id, M.nombre AS materia_nombre, U.nombre AS maestro_nombre, 
+               GRP.nombre AS grupo_nombre, GR.nombre as grado_nombre, C.horario, C.ciclo_escolar
+        FROM Clases C
+        JOIN Materias M ON C.materia_id = M.id JOIN Usuarios U ON C.maestro_id = U.id
+        JOIN Grupos GRP ON C.grupo_id = GRP.id JOIN Grados GR ON C.grado_id = GR.id
+        ORDER BY C.ciclo_escolar DESC, M.nombre, GR.nombre, GRP.nombre
+    ''').fetchall(); conn.close(); return clases
+    
+def get_clase_by_id(clase_id):
+    conn = get_db_connection()
+    clase = conn.execute('''
+        SELECT C.id, M.nombre AS materia_nombre, U.nombre AS maestro_nombre, 
+               GRP.nombre AS grupo_nombre, GR.nombre as grado_nombre, C.horario, C.ciclo_escolar,
+               C.materia_id, C.maestro_id, C.grupo_id, C.grado_id
+        FROM Clases C
+        JOIN Materias M ON C.materia_id = M.id JOIN Usuarios U ON C.maestro_id = U.id
+        JOIN Grupos GRP ON C.grupo_id = GRP.id JOIN Grados GR ON C.grado_id = GR.id
+        WHERE C.id = ?
+    ''', (clase_id,)).fetchone(); conn.close(); return clase
+
+def get_clases_por_maestro(maestro_id): 
+    conn = get_db_connection()
+    clases = conn.execute('''
+        SELECT C.id, M.nombre AS materia_nombre, GRP.nombre AS grupo_nombre, GR.nombre as grado_nombre, C.horario, C.ciclo_escolar
+        FROM Clases C
+        JOIN Materias M ON C.materia_id = M.id JOIN Grupos GRP ON C.grupo_id = GRP.id
+        JOIN Grados GR ON C.grado_id = GR.id
+        WHERE C.maestro_id = ?
+        ORDER BY C.ciclo_escolar DESC, M.nombre, GR.nombre, GRP.nombre
+    ''', (maestro_id,)).fetchall(); conn.close(); return clases
+
+def inscribir_alumno_a_clase(clase_id, alumno_id): 
+    conn = get_db_connection()
+    try:
+        conn.execute('INSERT INTO Clases_Alumnos (clase_id, alumno_id) VALUES (?, ?)', (clase_id, alumno_id)); conn.commit(); return True
+    except sqlite3.IntegrityError: print(f"Alumno {alumno_id} ya inscrito en clase {clase_id}."); return True 
+    except sqlite3.Error as e: print(f"Error BD al inscribir alumno {alumno_id} a clase {clase_id}: {e}"); return False
+    finally: conn.close()
+
+def get_alumnos_inscritos_clase_ids(clase_id): 
+    conn = get_db_connection()
+    alumnos_ids = [row['alumno_id'] for row in conn.execute('SELECT alumno_id FROM Clases_Alumnos WHERE clase_id = ?', (clase_id,)).fetchall()]
+    conn.close(); return alumnos_ids
+
+def get_alumnos_por_clase(clase_id): 
+    conn = get_db_connection()
+    alumnos = conn.execute('''
+        SELECT U.id, U.nombre, U.email, U.matricula
+        FROM Usuarios U JOIN Clases_Alumnos CA ON U.id = CA.alumno_id
+        WHERE CA.clase_id = ? AND U.tipo = 'alumno' ORDER BY U.nombre
+    ''', (clase_id,)).fetchall(); conn.close(); return alumnos
+
+def add_asistencia(clase_id, alumno_id, fecha, estatus, observaciones=None, hora=None):
+    conn = get_db_connection()
+    if hora is None: hora = datetime.now().strftime('%H:%M:%S')
+    try:
+        conn.execute('''
+            INSERT INTO Asistencias (clase_id, alumno_id, fecha, estatus, observaciones, hora) VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(clase_id, alumno_id, fecha) DO UPDATE SET estatus = excluded.estatus, 
+            observaciones = excluded.observaciones, hora = excluded.hora
+            ''', (clase_id, alumno_id, fecha, estatus, observaciones, hora)); conn.commit(); return True 
+    except sqlite3.Error as e: print(f"Error BD al agregar/actualizar asistencia: {e}"); return False 
+    finally: conn.close()
+
+def get_asistencia_alumno_clase_fecha(alumno_id, clase_id, fecha):
+    conn = get_db_connection()
+    asistencia = conn.execute('SELECT * FROM Asistencias WHERE alumno_id = ? AND clase_id = ? AND fecha = ?', (alumno_id, clase_id, fecha)).fetchone()
+    conn.close(); return asistencia
+
+def get_clases_inscritas_con_estado_asistencia(alumno_id, fecha_str): 
+    conn = get_db_connection(); clases_con_info = []
+    try:
+        clases_inscritas = conn.execute('''
+            SELECT c.id as clase_id, m.nombre as materia_nombre, u_maestro.nombre as maestro_nombre, 
+                   c.horario, c.ciclo_escolar, grp.nombre as grupo_nombre, gr.nombre as grado_nombre
+            FROM Clases_Alumnos ca
+            JOIN Clases c ON ca.clase_id = c.id JOIN Materias m ON c.materia_id = m.id
+            JOIN Usuarios u_maestro ON c.maestro_id = u_maestro.id JOIN Grupos grp ON c.grupo_id = grp.id
+            JOIN Grados gr ON c.grado_id = gr.id
+            WHERE ca.alumno_id = ? AND (u_maestro.tipo = 'maestro' OR u_maestro.tipo = 'administrador')
+        ''', (alumno_id,)).fetchall()
+        for clase_base in clases_inscritas:
+            asistencia_hoy = conn.execute('SELECT estatus FROM Asistencias WHERE alumno_id = ? AND clase_id = ? AND fecha = ?', 
+                                          (alumno_id, clase_base['clase_id'], fecha_str)).fetchone()
+            clase_dict = dict(clase_base); clase_dict['asistencia_hoy'] = asistencia_hoy['estatus'] if asistencia_hoy else None
+            clases_con_info.append(clase_dict)
+    except sqlite3.Error as e: print(f"Error BD en get_clases_inscritas_con_estado_asistencia: {e}")
+    finally: conn.close()
+    return clases_con_info
+
+def is_alumno_inscrito_en_clase(alumno_id, clase_id): 
+    conn = get_db_connection();
+    try:
+        result = conn.execute('SELECT 1 FROM Clases_Alumnos WHERE alumno_id = ? AND clase_id = ?', (alumno_id, clase_id)).fetchone()
+        return result is not None
+    except sqlite3.Error as e: print(f"Error BD en is_alumno_inscrito_en_clase: {e}"); return False
+    finally: conn.close()
+
+def add_justificante(alumno_id, fecha_inicio, fecha_fin, motivo, archivo_path=None, clase_id=None):
+    conn = get_db_connection(); fecha_solicitud = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    try:
+        conn.execute('''INSERT INTO Justificantes (alumno_id, fecha_solicitud, fecha_inasistencia_inicio, fecha_inasistencia_fin, clase_id, motivo, archivo_path, estado)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, 'Pendiente')''',
+                     (alumno_id, fecha_solicitud, fecha_inicio, fecha_fin, clase_id, motivo, archivo_path)); conn.commit(); return True
+    except sqlite3.Error as e: print(f"Error al añadir justificante: {e}"); return False
+    finally: conn.close()
+
+def get_all_justificantes():
+    conn = get_db_connection()
+    justificantes = conn.execute('''
+        SELECT J.*, U.nombre as alumno_nombre, U.email as alumno_email, 
+               C.id as id_clase_justificada, M.nombre as materia_clase_justificada
+        FROM Justificantes J JOIN Usuarios U ON J.alumno_id = U.id
+        LEFT JOIN Clases C ON J.clase_id = C.id LEFT JOIN Materias M ON C.materia_id = M.id 
+        ORDER BY J.fecha_solicitud DESC
+    ''').fetchall(); conn.close(); return justificantes
+
+def update_justificante_estado(justificante_id, nuevo_estado):
+    conn = get_db_connection();
+    try:
+        conn.execute("UPDATE Justificantes SET estado = ? WHERE id = ?", (nuevo_estado, justificante_id)); conn.commit(); return True
+    except sqlite3.Error as e: print(f"Error al actualizar estado de justificante: {e}"); return False
+    finally: conn.close()
+
+def get_maestro_by_usuario_original(usuario): 
+    conn = get_db_connection(); user = conn.execute("SELECT * FROM Maestros WHERE usuario = ?", (usuario,)).fetchone(); conn.close(); return user
+def get_alumno_by_matricula_original(matricula): 
+    conn = get_db_connection(); user = conn.execute("SELECT * FROM Alumnos WHERE matricula = ?", (matricula,)).fetchone(); conn.close(); return user
+
+def crear_alumno_original(nombre, ap, am, fn, curp, direccion, tel, id_grupo_orig, matricula, hash_pass):
+    conn = get_db_connection();
+    try:
+        conn.execute("INSERT INTO Alumnos (nombre, apellido_paterno, apellido_materno, fecha_nacimiento, curp, direccion, telefono, grupo_id, matricula, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+                     (nombre, ap, am, fn, curp, direccion, tel, id_grupo_orig, matricula, hash_pass)); conn.commit(); return True
+    except sqlite3.IntegrityError as e: print(f"Error integridad al crear alumno original: {e}"); return False
+    except Exception as e: print(f"Error general crear alumno original: {e}"); return False
+    finally: conn.close()
+
+def obtener_alumno_por_id_admin_original(id_alumno): 
+    conn = get_db_connection()
+    alumno = conn.execute("SELECT a.*, g.grado_id as id_grado FROM Alumnos a LEFT JOIN Grupos g ON a.grupo_id = g.id WHERE a.id = ?", (id_alumno,)).fetchone()
+    conn.close(); return alumno
+
+def actualizar_alumno_admin_original(id_a, n, ap, am, fn, curp, d, t, id_g_o, mat, hash_p):
+    conn = get_db_connection();
+    try:
+        conn.execute("UPDATE Alumnos SET nombre=?, apellido_paterno=?, apellido_materno=?, fecha_nacimiento=?, curp=?, direccion=?, telefono=?, grupo_id=?, matricula=?, password=? WHERE id=?", 
+                     (n, ap, am, fn, curp, d, t, id_g_o, mat, hash_p, id_a)); conn.commit(); return True
+    except sqlite3.Error as e: print(f"Error al actualizar alumno original: {e}"); return False
+    finally: conn.close()
+        
+def obtener_grados_para_form(): return get_grados()
+def obtener_grupos_para_form(): 
+    conn = get_db_connection()
+    grupos = conn.execute('''SELECT GRP.id, GRP.nombre || ' (' || GR.nombre || ')' as nombre_completo, GRP.grado_id
+                             FROM Grupos GRP JOIN Grados GR ON GRP.grado_id = GR.id
+                             ORDER BY GR.nombre, GRP.nombre''').fetchall()
+    conn.close(); return grupos
 
 if __name__ == '__main__':
-    print(f"Creando/Verificando la base de datos '{DATABASE_NAME}' directamente desde database.py...")
-    crear_db()
-    print("Proceso de base de datos (ejecución directa de database.py) finalizado.")
+    print(f"Ejecutando database.py para crear/verificar tablas en {DATABASE_NAME}...")
+    create_tables_and_initialize()
+    print("Proceso de base de datos completado.")
+    conn_main = get_db_connection()
+    try:
+        admin_default_usuarios = conn_main.execute("SELECT * FROM Usuarios WHERE email = 'admin@sistema.com'").fetchone()
+        if not admin_default_usuarios:
+            conn_main.execute("INSERT INTO Usuarios (nombre, email, password, tipo) VALUES (?, ?, ?, ?)",
+                             ('Admin Principal', 'admin@sistema.com', generate_password_hash('admin123'), 'administrador'))
+            conn_main.commit(); print("Admin por defecto 'admin@sistema.com' CREADO en Usuarios.")
+        else: print("Admin por defecto 'admin@sistema.com' YA EXISTE en Usuarios.")
+        # Opcional: Admin en tabla original Maestros
+        admin_original_maestros = conn_main.execute("SELECT * FROM Maestros WHERE usuario = 'admin'").fetchone()
+        if not admin_original_maestros:
+            conn_main.execute("INSERT INTO Maestros (nombre, usuario, password, rol) VALUES (?, ?, ?, ?)",
+                              ('Admin Original', 'admin', generate_password_hash('admin'), 'admin'))
+            conn_main.commit(); print("Admin 'admin' CREADO en tabla Maestros (original).")
+        else: print("Admin 'admin' YA EXISTE en tabla Maestros (original).")
+    except sqlite3.Error as e: print(f"Error al verificar/crear admin(s) por defecto: {e}")
+    finally:
+        if conn_main: conn_main.close()

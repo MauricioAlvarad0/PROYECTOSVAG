@@ -3,49 +3,49 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4">Gestionar Grupos</h2>
-
-    <div class="mb-3">
-        {# CORRECTION IS HERE: Changed 'agregar_grupo' to 'admin_agregar_grupo' #}
-        <a href="{{ url_for('admin_agregar_grupo') }}" class="btn btn-primary"><i class="fas fa-plus-circle me-2"></i>Agregar Nuevo Grupo</a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Gestionar Grupos Académicos</h1>
+        {# CORRECCIÓN AQUÍ: Cambiado 'admin_agregar_grupo' a 'admin_agregar_grupo_page' #}
+        <a href="{{ url_for('admin_agregar_grupo_page') }}" class="btn btn-success">
+            <i class="fas fa-plus-circle"></i> Agregar Nuevo Grupo
+        </a>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
             {% endfor %}
         {% endif %}
     {% endwith %}
 
     {% if grupos %}
     <div class="table-responsive">
-        <table class="table table-striped table-hover">
+        <table class="table table-striped table-hover table-bordered">
             <thead class="table-dark">
                 <tr>
                     <th>ID</th>
                     <th>Nombre del Grupo</th>
                     <th>Grado al que Pertenece</th>
-                    <th class="text-center">Acciones</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                {% for grupo_item in grupos %}  {# Using grupo_item to be specific #}
+                {% for grupo in grupos %} {# La variable 'grupos' viene de la ruta en server.py #}
                 <tr>
-                    <td>{{ grupo_item.id }}</td>
-                    <td>{{ grupo_item.nombre_grupo }}</td>
-                    <td>{{ grupo_item.nombre_grado }}</td>
-                    <td class="text-center">
-                        <a href="{{ url_for('admin_editar_grupo', id_grupo=grupo_item.id) }}" class="btn btn-sm btn-warning me-1" title="Editar">
-                            <i class="fas fa-edit"></i> <span class="d-none d-md-inline">Editar</span>
+                    <td>{{ grupo.id }}</td>
+                    <td>{{ grupo.nombre_grupo }}</td> {# Ajustado para usar las claves devueltas por database.get_grupos() #}
+                    <td>{{ grupo.nombre_grado }}</td> {# Ajustado para usar las claves devueltas por database.get_grupos() #}
+                    <td>
+                        <a href="{{ url_for('admin_editar_grupo_page', id_grupo=grupo.id) }}" class="btn btn-sm btn-outline-primary mb-1" title="Editar">
+                            <i class="fas fa-edit"></i> Editar
                         </a>
-                        <form action="{{ url_for('admin_eliminar_grupo', id_grupo=grupo_item.id) }}" method="POST" style="display:inline-block;">
-                            <button type="submit" class="btn btn-sm btn-danger" title="Eliminar"
-                                    onclick="return confirm('¿Estás seguro de eliminar este grupo? Los alumnos asignados a este grupo podrían quedar sin grupo (si está configurado ON DELETE SET NULL).');">
-                                <i class="fas fa-trash-alt"></i> <span class="d-none d-md-inline">Eliminar</span>
+                        <form action="{{ url_for('admin_eliminar_grupo_page', id_grupo=grupo.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar el grupo \'{{ grupo.nombre_grupo }} ({{ grupo.nombre_grado }})\'? Esta acción no se puede deshacer y podría afectar a clases y alumnos asociados.');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger mb-1" title="Eliminar">
+                                <i class="fas fa-trash-alt"></i> Eliminar
                             </button>
                         </form>
                     </td>
@@ -55,13 +55,10 @@
         </table>
     </div>
     {% else %}
-    <div class="alert alert-info mt-3">
-        <p class="mb-0">No hay grupos registrados. Puedes <a href="{{ url_for('admin_agregar_grupo') }}">agregar uno nuevo</a>.</p>
-    </div>
+    <p>No hay grupos registrados.</p>
     {% endif %}
-
-    <div class="mt-4">
-        <a href="{{ url_for('dashboard_admin') }}" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Volver al Panel</a>
-    </div>
+    <p><a href="{{ url_for('dashboard_admin') }}" class="btn btn-secondary mt-3">
+        <i class="fas fa-arrow-left"></i> Volver al Dashboard Principal
+    </a></p>
 </div>
 {% endblock %}

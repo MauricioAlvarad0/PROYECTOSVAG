@@ -3,26 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Sistema SVAG{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> {# <--- ESTA LÍNEA ES CRUCIAL #}
+    <title>{% block title %}Plataforma Educativa{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block head_extra %}{% endblock %} {# Para añadir CSS o JS específico de una página en el head #}
 </head>
-<body>
-    <div class="page-header">
-        {# ... tu header ... #}
-    </div>
+<body class="d-flex flex-column min-vh-100">
 
-    <div class="contenido"> {# <--- EL CONTENIDO DEBE ESTAR AQUÍ DENTRO #}
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <div class="flash-messages">
-              {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-              {% endfor %}
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{{ url_for('index') }}">
+                    <i class="fas fa-school me-2"></i> Plataforma Educativa
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                    <ul class="navbar-nav ms-auto">
+                        {% if session.user_id %}
+                            <li class="nav-item">
+                                <span class="navbar-text me-3">
+                                    <i class="fas fa-user-circle me-1"></i> Bienvenido, {{ session.user_name }} ({{ session.user_tipo|capitalize }})
+                                </span>
+                            </li>
+                            {% if session.user_tipo == 'administrador' %}
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint == 'dashboard_admin' %}active{% endif %}" href="{{ url_for('dashboard_admin') }}"><i class="fas fa-tachometer-alt me-1"></i>Dashboard Admin</a>
+                                </li>
+                            {% elif session.user_tipo == 'maestro' %}
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint == 'dashboard_maestro' %}active{% endif %}" href="{{ url_for('dashboard_maestro') }}"><i class="fas fa-chalkboard-teacher me-1"></i>Dashboard Maestro</a>
+                                </li>
+                            {% elif session.user_tipo == 'alumno' %}
+                                 <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint == 'dashboard_alumno' %}active{% endif %}" href="{{ url_for('dashboard_alumno') }}"><i class="fas fa-user-graduate me-1"></i>Dashboard Alumno</a>
+                                </li>
+                            {% endif %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión</a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'login_unificado_nuevo' %}active{% endif %}" href="{{ url_for('login_unificado_nuevo') }}">
+                                    <i class="fas fa-sign-in-alt me-1"></i> Iniciar Sesión
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
             </div>
-          {% endif %}
-        {% endwith %}
+        </nav>
+    </header>
 
+    <main class="flex-grow-1 py-4">
+        {# El contenido principal de cada página irá aquí #}
         {% block content %}{% endblock %}
-    </div>
+    </main>
+
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
+        <div class="container">
+            <p class="mb-0">&copy; {{ now().year }} Plataforma Educativa. Todos los derechos reservados.</p>
+            {# Puedes añadir más enlaces o información en el pie de página si lo deseas #}
+            {# <p class="mb-0"><a href="#" class="text-white">Política de Privacidad</a> | <a href="#" class="text-white">Términos de Servicio</a></p> #}
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+    {% block scripts_extra %}{% endblock %} {# Para añadir JS específico de una página al final del body #}
 </body>
 </html>

@@ -1,20 +1,50 @@
 {% extends "base.html" %}
-{% block title %}{{ titulo }}{% endblock %}
+{% block title %}{{ accion }} Materia{% endblock %}
+
 {% block content %}
-<h2>{{ titulo }}</h2>
-<form method="post" action="{{ accion_url }}">
-    <div>
-        <label for="clave_materia">Clave de Materia (Opcional):</label>
-        <input type="text" id="clave_materia" name="clave_materia" value="{{ materia.clave_materia if materia and materia.clave_materia is not none else '' }}">
-    </div>
-    <div>
-        <label for="nombre">Nombre de la Materia:</label>
-        <input type="text" id="nombre" name="nombre" value="{{ materia.nombre if materia else '' }}" required>
-    </div>
-    <br>
-    <input type="submit" value="{{ 'Actualizar' if materia and materia.id else 'Agregar' }} Materia" class="btn">
-</form>
-<div class="return-link-container">
-    <a href="{{ url_for('gestionar_materias') }}" class="btn btn-secondary">Cancelar y Volver a Materias</a>
+<div class="container mt-4">
+    <h1>{{ accion }} Materia</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    {# El action del formulario SÍ debe apuntar a la ruta de agregar o editar materia según corresponda #}
+    <form method="POST" 
+          action="{{ url_for('admin_agregar_materia_page') if accion == 'Agregar' else url_for('admin_editar_materia_page', id_materia=materia.id if materia else 0) }}" 
+          class="p-3 border rounded">
+        
+        <div class="mb-3">
+            <label for="nombre_materia" class="form-label">Nombre de la Materia:</label>
+            <input type="text" class="form-control" id="nombre_materia" name="nombre_materia" 
+                   value="{{ materia.nombre if materia else request.form.nombre_materia if request.form else '' }}" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="clave_materia" class="form-label">Clave de Materia (Opcional):</label>
+            <input type="text" class="form-control" id="clave_materia" name="clave_materia" 
+                   value="{{ materia.clave_materia if materia and materia.clave_materia else request.form.clave_materia if request.form and request.form.clave_materia else '' }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="descripcion" class="form-label">Descripción (Opcional):</label>
+            <textarea class="form-control" id="descripcion" name="descripcion" rows="3">{{ materia.descripcion if materia and materia.descripcion else request.form.descripcion if request.form else '' }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            <i class="fas {{ 'fa-plus-circle' if accion == 'Agregar' else 'fa-save' }}"></i> {{ accion }} Materia
+        </button>
+        {# CORRECCIÓN AQUÍ: Cambiado 'gestionar_materias' a 'admin_gestionar_materias_page' #}
+        <a href="{{ url_for('admin_gestionar_materias_page') }}" class="btn btn-secondary">
+            <i class="fas fa-times-circle"></i> Cancelar y Volver a Materias
+        </a>
+    </form>
 </div>
 {% endblock %}

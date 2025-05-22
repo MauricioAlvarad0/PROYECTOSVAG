@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Gestionar Justificantes{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+        <h2 class="mb-0"><i class="fas fa-file-medical-alt me-2"></i>Gestionar Justificantes</h2>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Justificantes Recibidos</h5>
+        </div>
+        {% if justificantes %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-bordered mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha Solicitud</th>
+                        <th>Alumno</th>
+                        <th>Email Alumno</th>
+                        <th>Fechas Inasistencia</th>
+                        <th>Clase (Si aplica)</th>
+                        <th>Motivo</th>
+                        <th>Archivo</th>
+                        <th>Estado Actual</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for just in justificantes %}
+                    <tr>
+                        <td>{{ just.id }}</td>
+                        <td><small>{{ just.fecha_solicitud }}</small></td>
+                        <td>{{ just.alumno_nombre }}</td>
+                        <td><small>{{ just.alumno_email }}</small></td>
+                        <td>{{ just.fecha_inasistencia_inicio }} al {{ just.fecha_inasistencia_fin }}</td>
+                        <td>
+                            {% if just.id_clase_justificada %}
+                                {{ just.materia_clase_justificada }} (Clase ID: {{ just.id_clase_justificada }})
+                            {% else %}
+                                General
+                            {% endif %}
+                        </td>
+                        <td><small>{{ just.motivo|truncate(60, True, '...') }}</small></td>
+                        <td>
+                            {% if just.archivo_path %}
+                            <a href="{{ url_for('static', filename='uploads/justificantes/' + just.archivo_path) }}" target="_blank" class="btn btn-sm btn-outline-info" title="Ver Archivo Adjunto">
+                                <i class="fas fa-paperclip"></i> Ver
+                            </a>
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if just.estado == 'Aprobado' %}bg-success
+                                {% elif just.estado == 'Rechazado' %}bg-danger
+                                {% elif just.estado == 'Pendiente' %}bg-warning text-dark
+                                {% endif %}">
+                                {{ just.estado }}
+                            </span>
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('admin_actualizar_estado_justificante', justificante_id=just.id) }}">
+                                <div class="input-group input-group-sm" style="min-width: 200px;">
+                                    <select name="estado" class="form-select form-select-sm">
+                                        <option value="Pendiente" {% if just.estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                                        <option value="Aprobado" {% if just.estado == 'Aprobado' %}selected{% endif %}>Aprobado</option>
+                                        <option value="Rechazado" {% if just.estado == 'Rechazado' %}selected{% endif %}>Rechazado</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="card-body">
+            <p class="text-center">No hay justificantes para mostrar.</p>
+        </div>
+        {% endif %}
+    </div>
+    <div class="mt-3">
+        <a href="{{ url_for('dashboard_admin') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver al Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

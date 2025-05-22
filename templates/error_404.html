@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Página no Encontrada{% endblock %}
+{% block content %}
+<div class="container mt-5 text-center">
+    <h1>Error 404</h1>
+    <p>Lo sentimos, la página que buscas no existe.</p>
+    <p><a href="{{ url_for('index') }}">Volver al inicio</a></p>
+    {% if error %}
+        <p><small>Detalle del error: {{ error }}</small></p>
+    {% endif %}
+</div>
+{% endblock %}

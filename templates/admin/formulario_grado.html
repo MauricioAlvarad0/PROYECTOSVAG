@@ -1,47 +1,48 @@
 {% extends "base.html" %}
-
-{% block title %}
-    {{ accion }} Grado - Administración
-{% endblock %}
+{% block title %}{{ accion }} Grado Académico{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="mb-0">{{ accion }} Grado</h2>
-                </div>
-                <div class="card-body">
-                    <form method="POST">
-                        {# Protección CSRF si la estuvieras usando con Flask-WTF #}
-                        {# {{ form.csrf_token }} #}
-                        
-                        <div class="mb-3">
-                            <label for="nombre_grado" class="form-label">Nombre del Grado:</label>
-                            <input type="text" class="form-control" id="nombre_grado" name="nombre_grado" 
-                                   value="{{ grado.nombre if grado else '' }}" required>
-                            {# Ejemplo de cómo mostrar errores de validación si usaras Flask-WTF #}
-                            {# {% if form.nombre_grado.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in form.nombre_grado.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %} #}
-                        </div>
+    <h1>{{ accion }} Grado Académico</h1>
 
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                            {# CORRECCIÓN AQUÍ: 'admin_gestionar_grados' en lugar de 'gestionar_grados' #}
-                            <a href="{{ url_for('admin_gestionar_grados') }}" class="btn btn-secondary me-md-2 mb-2 mb-md-0">
-                                <i class="fas fa-times-circle me-2"></i>Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-save me-2"></i>Guardar {{ accion }}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <form method="POST" 
+          action="{{ url_for('admin_agregar_grado_page') if accion == 'Agregar' else url_for('admin_editar_grado_page', id_grado=grado.id if grado else 0) }}" 
+          class="p-3 border rounded">
+        
+        <div class="mb-3">
+            <label for="nombre_grado" class="form-label">Nombre del Grado:</label>
+            {# Usa 'grado_form' si pasas request.form como 'grado_form' en la ruta, o 'grado' si pasas el objeto grado #}
+            {# En el server.py actual, para 'Agregar' se pasa 'grado=request.form' o 'grado=None' #}
+            {# Para 'Editar' se pasa 'grado=g_data' (que es un sqlite3.Row) #}
+            <input type="text" class="form-control" id="nombre_grado" name="nombre_grado" 
+                   value="{{ grado.nombre if grado and accion == 'Editar' else request.form.nombre_grado if request.form and accion == 'Agregar' else '' }}" 
+                   required>
         </div>
-    </div>
+        
+        {# Puedes añadir más campos si tu tabla Grados los tiene, ej. Descripción #}
+        {# <div class="mb-3">
+            <label for="descripcion_grado" class="form-label">Descripción (Opcional):</label>
+            <textarea class="form-control" id="descripcion_grado" name="descripcion_grado" rows="3">{{ grado.descripcion if grado and accion == 'Editar' else request.form.descripcion_grado if request.form and accion == 'Agregar' else '' }}</textarea>
+        </div> #}
+
+        <button type="submit" class="btn btn-primary">
+            <i class="fas {{ 'fa-plus-circle' if accion == 'Agregar' else 'fa-save' }}"></i> {{ accion }} Grado
+        </button>
+        {# CORRECCIÓN AQUÍ: Cambiado 'admin_gestionar_grados' a 'admin_gestionar_grados_page' #}
+        <a href="{{ url_for('admin_gestionar_grados_page') }}" class="btn btn-secondary">
+            <i class="fas fa-times-circle"></i> Cancelar y Volver a Grados
+        </a>
+    </form>
 </div>
 {% endblock %}

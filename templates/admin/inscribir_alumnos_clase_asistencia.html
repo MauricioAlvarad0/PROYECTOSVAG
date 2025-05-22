@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Inscribir Alumnos a Clase{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="border-bottom pb-2 mb-3">
+        <h2>Inscribir Alumnos a: <span class="text-primary">{{ clase_info.materia_nombre }}</span></h2>
+        <p class="text-muted">
+            <strong>Maestro:</strong> {{ clase_info.maestro_nombre }} <br>
+            <strong>Grado:</strong> {{ clase_info.grado_nombre }} | 
+            <strong>Grupo:</strong> {{ clase_info.grupo_nombre }} <br>
+            <strong>Ciclo:</strong> {{ clase_info.ciclo_escolar }} | 
+            <strong>Horario:</strong> {{ clase_info.horario }}
+        </p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Seleccionar Alumnos para Inscribir/Actualizar</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('inscribir_alumnos_clase_asistencia', clase_id=clase_id) }}">
+                {% if todos_los_alumnos %}
+                    <p><small>Marca los alumnos que deseas inscribir en esta clase. Los alumnos no marcados serán desinscritos si ya lo estaban.</small></p>
+                    <div class="list-group mb-3" style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding:10px; border-radius: .25rem;">
+                    {% for alumno in todos_los_alumnos %}
+                        <label class="list-group-item list-group-item-action">
+                            <input class="form-check-input me-2" type="checkbox" name="alumno_ids" value="{{ alumno.id }}" 
+                                   {% if alumno.id in alumnos_ya_inscritos_ids %}checked{% endif %}>
+                            {{ alumno.nombre }} ({{ alumno.email if alumno.email else alumno.matricula if alumno.matricula else 'ID: ' + alumno.id|string }})
+                        </label>
+                    {% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Inscripciones
+                    </button>
+                {% else %}
+                    <p class="text-center text-muted">No hay alumnos (tipo 'alumno') registrados en el sistema para inscribir. 
+                        <a href="{{ url_for('admin_agregar_usuario')}}?tipo=alumno">Agregar Alumno</a>
+                    </p>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a href="{{ url_for('gestionar_clases_asistencia') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver a Gestionar Clases
+        </a>
+    </div>
+</div>
+{% endblock %}

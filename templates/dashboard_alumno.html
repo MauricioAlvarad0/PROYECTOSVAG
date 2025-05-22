@@ -1,71 +1,110 @@
 {% extends "base.html" %}
-{% block title %}Panel Alumno{% endblock %}
+
+{% block title %}Dashboard Alumno - {{ alumno_nombre }}{% endblock %}
+
 {% block content %}
-<h2>Panel del Alumno: {{ session.get('nombre_usuario') }}</h2>
-<p><strong>Grupo:</strong> {{ session.get('grupo_info', 'N/A') }}</p>
-
-<h3>Mis Asistencias Recientes</h3>
-{% if asistencias %}
-<table>
-    <thead>
-        <tr><th>Fecha</th><th>Hora</th><th>Materia</th><th>Estado</th><th>Observaciones</th></tr>
-    </thead>
-    <tbody>
-    {% for a in asistencias %}
-        <tr>
-            <td>{{ a.fecha }}</td>
-            <td>{{ a.hora if a.hora else '--:--' }}</td>
-            <td>{{ a.nombre_materia }}</td>
-            <td>{{ a.estado }}</td>
-            <td>{{ a.observaciones if a.observaciones else '' }}</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>No tienes registros de asistencia recientes.</p>
-{% endif %}
-
-<hr style="margin: 30px 0;">
-
-<h3>Mis Justificantes</h3>
-{% if justificantes %}
- <table>
-    <thead>
-        <tr><th>Solicitud</th><th>Fechas Inasistencia</th><th>Materia</th><th>Motivo</th><th>Estado</th></tr>
-    </thead>
-    <tbody>
-    {% for j in justificantes %}
-        <tr>
-            <td>{{ j.fecha_solicitud.split(' ')[0] }}</td> {# Solo fecha #}
-            <td>{{ j.fecha_inasistencia_inicio }}{% if j.fecha_inasistencia_fin != j.fecha_inasistencia_inicio %} al {{j.fecha_inasistencia_fin}}{% endif%}</td>
-            <td>{{ j.nombre_materia if j.nombre_materia else 'General' }}</td>
-            <td>{{ j.motivo }}</td>
-            <td>{{ j.estado }}</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>No tienes justificantes registrados.</p>
-{% endif %}
-
-<hr style="margin: 30px 0;">
-<h3>Subir Nuevo Justificante</h3>
-<form method="post" action="{{ url_for('alumno_subir_justificante') }}">
-    <div>
-        <label for="fecha_inasistencia_inicio">Fecha de Inicio de Inasistencia:</label>
-        <input type="date" id="fecha_inasistencia_inicio" name="fecha_inasistencia_inicio" required>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Bienvenido, {{ alumno_nombre }}!</h2>
+        <a href="{{ url_for('logout') }}" class="btn btn-danger">Cerrar Sesión</a>
     </div>
-     <div>
-        <label for="fecha_inasistencia_fin">Fecha de Fin de Inasistencia (si es más de un día):</label>
-        <input type="date" id="fecha_inasistencia_fin" name="fecha_inasistencia_fin">
+    <p>Este es tu panel de control.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <hr>
+
+    <div class="row">
+        <div class="col-md-7">
+            <h3>Registrar mi Asistencia para Hoy ({{ fecha_actual }})</h3>
+            {% if clases_hoy is defined and clases_hoy %}
+                <div class="list-group">
+                    {% for clase in clases_hoy %}
+                    <div class="list-group-item list-group-item-action flex-column align-items-start mb-2 p-3 shadow-sm">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ clase.materia_nombre }}</h5>
+                            <small class="text-muted">Prof. {{ clase.maestro_nombre }}</small>
+                        </div>
+                        <p class="mb-1">
+                            <small>
+                                {{ clase.grado_nombre }} - {{ clase.grupo_nombre }} <br>
+                                Horario: {{ clase.horario if clase.horario else 'No especificado' }} <br>
+                                Ciclo: {{ clase.ciclo_escolar if clase.ciclo_escolar else 'N/A' }}
+                            </small>
+                        </p>
+                        
+                        {% if clase.asistencia_hoy %}
+                            <p class="mt-2"><span class="badge 
+                                {% if clase.asistencia_hoy == 'Presente' %}bg-success
+                                {% elif clase.asistencia_hoy == 'Ausente' %}bg-danger
+                                {% elif clase.asistencia_hoy == 'Justificado' %}bg-info text-dark
+                                {% elif clase.asistencia_hoy == 'Tardanza' %}bg-warning text-dark
+                                {% else %}bg-secondary
+                                {% endif %}
+                                ">Asistencia Registrada: {{ clase.asistencia_hoy }}</span></p>
+                        {% else %}
+                            <form action="{{ url_for('alumno_marcar_asistencia', clase_id=clase.clase_id) }}" method="POST" class="mt-2">
+                                <button type="submit" class="btn btn-primary btn-sm">Marcar Presente</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            {% elif clases_hoy is defined and not clases_hoy %}
+                <p>No tienes clases asignadas para registrar asistencia hoy, o ya has registrado todas.</p>
+                <p><small>Si crees que esto es un error, contacta a administración para verificar tu inscripción a clases.</small></p>
+            {% else %}
+                 <p class="text-danger">Hubo un problema al cargar tus clases. Intenta recargar la página o contacta a soporte.</p>
+            {% endif %}
+        </div>
+
+        <div class="col-md-5">
+            <h3>Subir Justificante</h3>
+            <form action="{{ url_for('alumno_subir_justificante') }}" method="POST" enctype="multipart/form-data" class="p-3 border rounded bg-light shadow-sm">
+                <div class="mb-3">
+                    <label for="fecha_inasistencia_inicio" class="form-label">Fecha Inicio Inasistencia:</label>
+                    <input type="date" class="form-control" id="fecha_inasistencia_inicio" name="fecha_inasistencia_inicio" required>
+                </div>
+                <div class="mb-3">
+                    <label for="fecha_inasistencia_fin" class="form-label">Fecha Fin Inasistencia:</label>
+                    <input type="date" class="form-control" id="fecha_inasistencia_fin" name="fecha_inasistencia_fin" required>
+                </div>
+                <div class="mb-3">
+                    <label for="clase_id_justificante" class="form-label">Clase (Opcional, si aplica a una específica):</label>
+                    <select class="form-select" id="clase_id_justificante" name="clase_id_justificante">
+                        <option value="">-- Justificante General --</option>
+                        {% if clases_hoy %} {# Puedes usar clases_hoy o una variable separada como mis_clases_para_justificante #}
+                            {% for clase in clases_hoy %}
+                            <option value="{{ clase.clase_id }}">{{ clase.materia_nombre }} ({{clase.grado_nombre}} {{clase.grupo_nombre}})</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="motivo_justificante" class="form-label">Motivo:</label>
+                    <textarea class="form-control" id="motivo_justificante" name="motivo_justificante" rows="3" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="archivo_justificante" class="form-label">Archivo Adjunto (Opcional):</label>
+                    <input class="form-control" type="file" id="archivo_justificante" name="archivo_justificante">
+                    <small class="form-text text-muted">Formatos permitidos: png, jpg, pdf, doc, docx.</small>
+                </div>
+                <button type="submit" class="btn btn-info">Enviar Justificante</button>
+            </form>
+        </div>
     </div>
-    <div>
-        <label for="motivo">Motivo del Justificante:</label>
-        <textarea id="motivo" name="motivo" rows="3" required></textarea>
-    </div>
-    {# Futuro: campo para seleccionar asignación si aplica, y para subir archivo #}
-    <input type="submit" value="Enviar Justificante" class="btn">
-</form>
+
+    <hr>
+    <p><a href="{{ url_for('alumno_mis_calificaciones') }}" class="btn btn-secondary mt-3">Mis Calificaciones</a></p>
+    
+</div>
 {% endblock %}

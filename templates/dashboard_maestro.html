@@ -1,15 +1,51 @@
 {% extends "base.html" %}
-{% block title %}Panel Maestro{% endblock %}
+{% block title %}Dashboard Maestro - {{ nombre_usuario }}{% endblock %}
+
 {% block content %}
-<h2>Panel del Maestro</h2>
-<p>Bienvenido, {{ session.get('nombre_usuario', 'Maestro') }}!</p>
-<ul class="dashboard-links">
-    <li><a href="{{ url_for('maestro_mis_clases') }}">Mis Clases y Registrar Asistencia</a></li>
-    <li><a href="#">Revisar Justificantes (Próximamente)</a></li>
-    {# <li><a href="#">Ver Lista de Alumnos por Clase (Próximamente)</a></li> #}
-</ul>
-{% if session.get('rol') == 'admin' %} {# Si un admin accede a este panel #}
-<hr>
-<p><a href="{{ url_for('dashboard_admin') }}" class="btn btn-secondary">Ir al Panel de Administrador</a></p>
-{% endif %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <h2 class="mb-0"><i class="fas fa-chalkboard-teacher me-2"></i>Panel de Maestro</h2>
+        <a href="{{ url_for('logout') }}" class="btn btn-danger">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+        </a>
+    </div>
+    <p class="lead">Bienvenido, {{ nombre_usuario }}!</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <h3 class="mt-4 mb-3">Mis Clases Asignadas</h3>
+    {% if clases %}
+        <div class="list-group shadow-sm">
+            {% for clase_asignada in clases %} {# La variable 'clases' es pasada desde server.py #}
+            <div class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ clase_asignada.materia_nombre }}</h5>
+                    <small class="text-muted">Ciclo: {{ clase_asignada.ciclo_escolar }}</small>
+                </div>
+                <p class="mb-1">
+                    <strong>Grado:</strong> {{ clase_asignada.grado_nombre }} - 
+                    <strong>Grupo:</strong> {{ clase_asignada.grupo_nombre }} <br>
+                    <small><strong>Horario:</strong> {{ clase_asignada.horario if clase_asignada.horario else 'No especificado' }}</small>
+                </p>
+                <a href="{{ url_for('registrar_asistencia_maestro', clase_id=clase_asignada.id) }}" class="btn btn-primary btn-sm mt-2">
+                    <i class="fas fa-calendar-check me-1"></i> Gestionar Asistencia de esta Clase
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            <i class="fas fa-info-circle me-2"></i> No tienes clases asignadas en este momento o no se pudieron cargar. Contacta al administrador.
+        </div>
+    {% endif %}
+</div>
 {% endblock %}
